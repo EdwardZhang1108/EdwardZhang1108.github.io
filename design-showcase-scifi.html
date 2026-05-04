@@ -1,0 +1,1293 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>设计方案 · Sci-Fi 系列</title>
+<style>
+/* ===================================================================
+   SHELL
+   =================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #050505;
+  color: #ededed;
+  font-family: ui-sans-serif, -apple-system, "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.shell-head {
+  padding: 56px 64px 40px;
+  border-bottom: 1px solid #1a1a1a;
+  display: flex; align-items: end; justify-content: space-between; gap: 32px;
+}
+.shell-head h1 {
+  font-size: 1.75rem; margin: 0 0 8px;
+  letter-spacing: -0.02em; font-weight: 700;
+  font-family: ui-monospace, "JetBrains Mono", "SF Mono", monospace;
+  text-transform: uppercase;
+}
+.shell-head h1 em { font-style: normal; color: #4dd9ff; font-weight: 400; }
+.shell-head p { color: #777; margin: 0; font-size: 0.9rem; max-width: 540px; line-height: 1.6; }
+.shell-head .meta {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.72rem; color: #555; text-align: right; letter-spacing: 0.04em;
+}
+.shell-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: #161616; border-top: 1px solid #161616; }
+.opt { background: #050505; display: flex; flex-direction: column; min-height: 560px; }
+.opt-head { padding: 26px 32px 18px; display: flex; flex-direction: column; gap: 10px; }
+.opt-row { display: flex; align-items: center; gap: 14px; }
+.opt-num { font-family: ui-monospace, monospace; font-size: 0.7rem; color: #666; letter-spacing: 0.1em; }
+.opt-title { font-size: 1.1rem; font-weight: 600; color: #ededed; letter-spacing: -0.01em; }
+.opt-tag {
+  margin-left: auto; font-family: ui-monospace, monospace; font-size: 0.66rem; color: #888;
+  padding: 4px 10px; border: 1px solid #2a2a2a; border-radius: 100px; letter-spacing: 0.04em;
+}
+.opt-desc { font-size: 0.84rem; color: #888; line-height: 1.55; max-width: 520px; }
+.opt-desc b { color: #ccc; font-weight: 500; }
+.preview-frame { flex: 1; border-top: 1px solid #161616; height: 480px; overflow: hidden; position: relative; }
+.preview-inner { width: 1280px; transform: scale(0.5); transform-origin: top left; pointer-events: none; user-select: none; }
+
+/* ===================================================================
+   S1 · MISSION CONTROL HUD
+   =================================================================== */
+.s1 {
+  background:
+    linear-gradient(rgba(77,217,255,0.025) 1px, transparent 1px) 0 0/100% 24px,
+    linear-gradient(90deg, rgba(77,217,255,0.025) 1px, transparent 1px) 0 0/24px 100%,
+    radial-gradient(900px 600px at 80% 20%, rgba(77,217,255,0.08), transparent 60%),
+    #050608;
+  color: #c9d8e0;
+  font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  position: relative;
+  min-height: 860px;
+  --cy: #4dd9ff;
+  --am: #ffaa33;
+  --gn: #6cff8a;
+  --rd: #ff4d6d;
+}
+.s1 .topband {
+  display: flex; align-items: center; gap: 24px;
+  padding: 8px 24px;
+  background: rgba(77,217,255,0.04);
+  border-bottom: 1px solid rgba(77,217,255,0.18);
+  font-size: 0.74rem; color: #6e8090; letter-spacing: 0.06em;
+}
+.s1 .topband .live {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--gn);
+}
+.s1 .topband .live::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--gn); box-shadow: 0 0 8px var(--gn);
+  animation: pulse 1.4s infinite;
+}
+@keyframes pulse { 50% { opacity: 0.4; } }
+.s1 .topband .sep { color: rgba(77,217,255,0.3); }
+.s1 .topband .right { margin-left: auto; display: flex; gap: 20px; }
+.s1 .topband em { font-style: normal; color: var(--cy); }
+.s1 .topband .alert { color: var(--am); }
+
+.s1 .mast {
+  display: grid; grid-template-columns: 80px 1fr 360px;
+  gap: 0;
+  border-bottom: 1px solid rgba(77,217,255,0.18);
+}
+.s1 .mast .lbl-col {
+  border-right: 1px solid rgba(77,217,255,0.12);
+  padding: 24px 14px;
+  display: flex; flex-direction: column; gap: 18px;
+  font-size: 0.66rem; color: #6e8090;
+  letter-spacing: 0.1em;
+}
+.s1 .mast .lbl-col span { display: block; }
+.s1 .mast .lbl-col em { font-style: normal; color: var(--cy); display: block; }
+
+.s1 .mast .center { padding: 28px 32px; position: relative; }
+.s1 .mast .center::before, .s1 .mast .center::after {
+  content: ""; position: absolute;
+  width: 14px; height: 14px;
+  border: 1px solid var(--cy);
+}
+.s1 .mast .center::before { top: 12px; left: 12px; border-right: 0; border-bottom: 0; }
+.s1 .mast .center::after { bottom: 12px; right: 12px; border-left: 0; border-top: 0; }
+.s1 .mast .desig { font-size: 0.74rem; color: var(--am); letter-spacing: 0.14em; margin-bottom: 10px; }
+.s1 .mast h1 {
+  font-size: 4.4rem; line-height: 0.96; font-weight: 700;
+  letter-spacing: -0.02em; margin: 0 0 16px;
+  color: #fff; text-transform: uppercase;
+  text-shadow: 0 0 24px rgba(77,217,255,0.35);
+}
+.s1 .mast h1 em { font-style: normal; color: var(--cy); font-weight: 400; }
+.s1 .mast .lede {
+  font-size: 0.86rem; color: #8da4b3;
+  max-width: 640px; line-height: 1.65; margin: 0 0 18px;
+}
+.s1 .mast .lede b { color: var(--cy); font-weight: 500; }
+.s1 .mast .lede em { font-style: normal; color: var(--am); }
+.s1 .mast .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.s1 .mast .badges span {
+  padding: 4px 10px; font-size: 0.7rem; letter-spacing: 0.08em;
+  border: 1px solid rgba(77,217,255,0.4); color: var(--cy);
+}
+.s1 .mast .badges span.am { border-color: rgba(255,170,51,0.5); color: var(--am); }
+.s1 .mast .badges span.gn { border-color: rgba(108,255,138,0.4); color: var(--gn); }
+
+.s1 .mast .right-pane {
+  border-left: 1px solid rgba(77,217,255,0.12);
+  padding: 18px 22px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.s1 .mast .right-pane .blk { border: 1px solid rgba(77,217,255,0.18); padding: 12px 14px; position: relative; }
+.s1 .mast .right-pane .blk h4 { font-size: 0.7rem; color: #6e8090; letter-spacing: 0.1em; margin: 0 0 8px; font-weight: 400; }
+.s1 .mast .right-pane .blk .v { font-size: 1.4rem; color: var(--cy); letter-spacing: 0.04em; }
+.s1 .mast .right-pane .blk .v em { font-style: normal; color: #6e8090; font-size: 0.74rem; }
+.s1 .mast .right-pane .blk .bar {
+  margin-top: 8px; height: 4px;
+  background: rgba(77,217,255,0.1);
+  position: relative;
+}
+.s1 .mast .right-pane .blk .bar::after {
+  content: ""; position: absolute; left: 0; top: 0; height: 100%;
+  width: 78%; background: var(--cy); box-shadow: 0 0 6px var(--cy);
+}
+
+.s1 .radar {
+  position: relative; height: 110px;
+  border: 1px solid rgba(77,217,255,0.18);
+  background:
+    radial-gradient(closest-side at 50% 50%, transparent 30%, rgba(77,217,255,0.06) 31%, transparent 32%),
+    radial-gradient(closest-side at 50% 50%, transparent 50%, rgba(77,217,255,0.06) 51%, transparent 52%),
+    radial-gradient(closest-side at 50% 50%, transparent 70%, rgba(77,217,255,0.06) 71%, transparent 72%),
+    linear-gradient(0deg, transparent 49.6%, rgba(77,217,255,0.18) 50%, transparent 50.4%),
+    linear-gradient(90deg, transparent 49.6%, rgba(77,217,255,0.18) 50%, transparent 50.4%);
+  overflow: hidden;
+}
+.s1 .radar .blip { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--am); box-shadow: 0 0 8px var(--am); }
+
+.s1 .grid-section {
+  display: grid; grid-template-columns: 80px 1fr;
+  border-bottom: 1px solid rgba(77,217,255,0.18);
+}
+.s1 .grid-section .sl {
+  border-right: 1px solid rgba(77,217,255,0.12);
+  padding: 18px 14px;
+  font-size: 0.66rem; color: #6e8090; letter-spacing: 0.1em;
+}
+.s1 .grid-section .sl em { font-style: normal; color: var(--cy); display: block; margin-top: 6px; }
+.s1 .grid-section .sc { padding: 18px 24px; }
+.s1 .sec-h {
+  display: flex; align-items: baseline; gap: 14px;
+  border-bottom: 1px solid rgba(77,217,255,0.12);
+  padding-bottom: 10px; margin-bottom: 12px;
+}
+.s1 .sec-h h2 {
+  font-size: 0.92rem; margin: 0; color: #fff;
+  letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600;
+}
+.s1 .sec-h h2::before { content: "▸ "; color: var(--cy); }
+.s1 .sec-h .meta-r { margin-left: auto; font-size: 0.7rem; color: #6e8090; letter-spacing: 0.06em; }
+
+.s1 .miss {
+  width: 100%; border-collapse: collapse; font-size: 0.84rem;
+}
+.s1 .miss th {
+  text-align: left; padding: 8px 10px;
+  color: #6e8090; letter-spacing: 0.1em;
+  font-weight: 400; font-size: 0.66rem;
+  border-bottom: 1px solid rgba(77,217,255,0.18);
+}
+.s1 .miss td {
+  padding: 13px 10px;
+  border-bottom: 1px dashed rgba(77,217,255,0.1);
+  vertical-align: top;
+}
+.s1 .miss .id { color: var(--am); }
+.s1 .miss .when { color: var(--cy); white-space: nowrap; }
+.s1 .miss .target { color: #fff; font-weight: 600; letter-spacing: 0.04em; }
+.s1 .miss .target .sub { display: block; color: #6e8090; font-weight: 400; font-size: 0.74rem; letter-spacing: 0.06em; margin-top: 2px; }
+.s1 .miss .obj { color: #8da4b3; line-height: 1.55; }
+.s1 .miss .stat .pill {
+  display: inline-block; padding: 2px 8px;
+  border: 1px solid currentColor;
+  font-size: 0.7rem; letter-spacing: 0.1em;
+}
+.s1 .miss .stat.go .pill { color: var(--gn); }
+.s1 .miss .stat.am .pill { color: var(--am); }
+.s1 .miss .stat.dim .pill { color: #6e8090; }
+
+.s1 .assets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid rgba(77,217,255,0.18); }
+.s1 .assets .a { padding: 16px; border-right: 1px solid rgba(77,217,255,0.12); position: relative; }
+.s1 .assets .a:last-child { border-right: 0; }
+.s1 .assets .a::before, .s1 .assets .a::after {
+  content: ""; position: absolute; width: 8px; height: 8px;
+  border: 1px solid var(--cy);
+}
+.s1 .assets .a::before { top: 4px; left: 4px; border-right: 0; border-bottom: 0; }
+.s1 .assets .a::after { bottom: 4px; right: 4px; border-left: 0; border-top: 0; }
+.s1 .assets .id2 { font-size: 0.7rem; color: var(--am); letter-spacing: 0.1em; margin-bottom: 8px; }
+.s1 .assets h4 {
+  font-size: 0.96rem; color: #fff; font-weight: 600;
+  margin: 0 0 6px; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.s1 .assets p { font-size: 0.78rem; color: #8da4b3; margin: 0 0 12px; line-height: 1.55; }
+.s1 .assets .kv { display: grid; grid-template-columns: 70px 1fr; gap: 4px 12px; font-size: 0.7rem; }
+.s1 .assets .kv .k { color: #6e8090; letter-spacing: 0.08em; }
+.s1 .assets .kv .v { color: var(--cy); }
+
+/* ===================================================================
+   S2 · CYBERPUNK NEO-TOKYO
+   =================================================================== */
+.s2 {
+  background: #0a0a0a;
+  color: #e0e0e0;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 13px;
+  position: relative;
+  min-height: 860px;
+  --y: #ffe600;
+  --r: #ff003c;
+  --c: #00ffff;
+}
+.s2::before {
+  content: ""; position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(255,255,255,0.02) 3px),
+    radial-gradient(700px 400px at 90% 0%, rgba(255,0,60,0.18), transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+.s2 > * { position: relative; z-index: 1; }
+.s2 .stripe {
+  background:
+    repeating-linear-gradient(135deg, var(--y) 0 14px, #0a0a0a 14px 28px);
+  height: 18px;
+}
+.s2 .topinfo {
+  display: flex; align-items: center; gap: 18px;
+  padding: 8px 28px;
+  border-bottom: 1px solid #2a2a2a;
+  font-size: 0.72rem; color: #888; letter-spacing: 0.06em;
+}
+.s2 .topinfo .red { color: var(--r); }
+.s2 .topinfo .y { color: var(--y); }
+.s2 .topinfo .right { margin-left: auto; display: flex; gap: 20px; }
+.s2 .topinfo span.warn::before { content: "⚠ "; color: var(--y); }
+.s2 .header {
+  display: grid; grid-template-columns: 60px 1fr 60px;
+  border-bottom: 1px solid #2a2a2a;
+}
+.s2 .header .vert {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.4em;
+  padding: 16px 0;
+  font-size: 0.74rem; color: var(--y);
+  border-right: 1px solid #2a2a2a;
+  display: grid; place-items: center;
+}
+.s2 .header .vert.r { border-right: 0; border-left: 1px solid #2a2a2a; }
+.s2 .header .nav {
+  display: flex; align-items: center; padding: 0 32px;
+  gap: 28px;
+  font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.s2 .header .brand { color: var(--y); font-weight: 700; font-size: 0.92rem; }
+.s2 .header .brand::before { content: "▰ "; color: var(--r); }
+.s2 .header .navi { color: #888; }
+.s2 .header .navi.x { color: #fff; }
+.s2 .header .navi::before { content: "//"; color: #444; margin-right: 4px; }
+.s2 .header .login { margin-left: auto; color: var(--c); }
+.s2 .header .login::before { content: "[ "; }
+.s2 .header .login::after { content: " ]"; }
+
+.s2 main { padding: 36px 60px 50px; position: relative; }
+.s2 .meta-strip {
+  display: flex; gap: 20px;
+  padding: 8px 0; margin-bottom: 22px;
+  font-size: 0.72rem; color: #666; letter-spacing: 0.06em;
+  border-top: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a;
+}
+.s2 .meta-strip .y { color: var(--y); }
+.s2 .meta-strip .c { color: var(--c); }
+
+.s2 .hero { display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; align-items: end; }
+.s2 .hero .l .nm-meta {
+  font-size: 0.78rem; color: var(--r); letter-spacing: 0.18em;
+  margin-bottom: 10px;
+}
+.s2 .hero .l .nm-meta::before { content: "//"; color: #444; margin-right: 6px; }
+.s2 .hero h1 {
+  font-size: 5.4rem; line-height: 0.94; font-weight: 800;
+  letter-spacing: -0.04em; margin: 0 0 8px;
+  color: #fff; text-transform: uppercase;
+  position: relative;
+}
+.s2 .hero h1 .glitch1, .s2 .hero h1 .glitch2 {
+  position: absolute; left: 0; top: 0;
+  width: 100%; pointer-events: none;
+}
+.s2 .hero h1 .glitch1 { color: var(--r); transform: translate(-3px, 1px); clip-path: polygon(0 14%, 100% 14%, 100% 26%, 0 26%); }
+.s2 .hero h1 .glitch2 { color: var(--c); transform: translate(2px, -1px); clip-path: polygon(0 60%, 100% 60%, 100% 72%, 0 72%); }
+.s2 .hero .id-blk {
+  display: inline-block;
+  padding: 4px 10px; background: var(--y); color: #0a0a0a;
+  font-size: 0.78rem; letter-spacing: 0.14em; font-weight: 700;
+  margin-bottom: 22px;
+}
+.s2 .hero .lede {
+  font-size: 0.94rem; color: #c0c0c0; max-width: 640px;
+  line-height: 1.65; margin: 0 0 22px;
+}
+.s2 .hero .lede .red { color: var(--r); }
+.s2 .hero .lede .y { color: var(--y); }
+.s2 .hero .redact {
+  display: inline-block; height: 0.8em; padding: 0 0.5em;
+  background: #fff; vertical-align: -0.05em;
+  width: 110px;
+}
+.s2 .hero .ctas { display: flex; gap: 0; }
+.s2 .hero .cta {
+  padding: 11px 22px; font-size: 0.82rem;
+  letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700;
+  border: 1px solid var(--y); color: var(--y);
+  margin-right: -1px;
+}
+.s2 .hero .cta.x { background: var(--y); color: #0a0a0a; }
+.s2 .hero .cta::before { content: "▸ "; }
+
+.s2 .hero .r {
+  border: 1px solid #2a2a2a; padding: 18px 22px;
+  background: rgba(255,0,60,0.04);
+  position: relative;
+}
+.s2 .hero .r::before {
+  content: "DOSSIER ::: 0042-EZH";
+  position: absolute; top: -8px; left: 14px;
+  background: #0a0a0a; padding: 0 8px;
+  font-size: 0.7rem; color: var(--r); letter-spacing: 0.14em;
+}
+.s2 .hero .r .kv { display: grid; grid-template-columns: 110px 1fr; gap: 8px 16px; font-size: 0.78rem; }
+.s2 .hero .r .kv .k { color: #666; letter-spacing: 0.06em; }
+.s2 .hero .r .kv .v { color: #fff; }
+.s2 .hero .r .kv .v.y { color: var(--y); }
+.s2 .hero .r .kv .v.c { color: var(--c); }
+
+.s2 .sec { margin-top: 36px; }
+.s2 .sec-h {
+  display: flex; align-items: baseline; gap: 16px;
+  padding: 6px 0;
+  border-top: 2px solid var(--y);
+  border-bottom: 1px solid #2a2a2a;
+  margin-bottom: 14px;
+}
+.s2 .sec-h h2 { font-size: 1.05rem; margin: 0; color: var(--y); letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; }
+.s2 .sec-h h2::before { content: "▰▰ "; color: var(--r); }
+.s2 .sec-h .right { margin-left: auto; font-size: 0.74rem; color: #666; letter-spacing: 0.08em; }
+
+.s2 .doss { display: grid; gap: 0; }
+.s2 .doss .row {
+  display: grid; grid-template-columns: 60px 180px 1fr 130px;
+  gap: 18px; padding: 16px 12px;
+  border-bottom: 1px solid #1a1a1a;
+  align-items: baseline;
+}
+.s2 .doss .row .id3 { color: var(--r); font-size: 0.78rem; letter-spacing: 0.1em; }
+.s2 .doss .row .when { color: var(--c); font-size: 0.82rem; letter-spacing: 0.04em; }
+.s2 .doss .row .body { font-size: 0.86rem; color: #e0e0e0; line-height: 1.55; }
+.s2 .doss .row .body b { color: var(--y); font-weight: 700; letter-spacing: 0.04em; }
+.s2 .doss .row .stat { font-size: 0.74rem; letter-spacing: 0.14em; text-align: right; }
+.s2 .doss .row .stat.act { color: var(--y); }
+.s2 .doss .row .stat.dim { color: #666; }
+
+/* ===================================================================
+   S3 · TRON GRID / SYNTHWAVE
+   =================================================================== */
+.s3 {
+  background:
+    linear-gradient(180deg, #0a0030 0%, #2d0050 40%, #ff0080 75%, #ff8a3d 100%);
+  color: #fff;
+  font-family: "Orbitron", "Geist Mono", ui-monospace, "JetBrains Mono", monospace;
+  font-size: 14px;
+  position: relative;
+  min-height: 860px;
+  overflow: hidden;
+  --c: #00f0ff;
+  --m: #ff00d4;
+}
+.s3::before {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(70% 40% at 50% 30%, rgba(255,0,212,0.5), transparent 60%),
+    radial-gradient(50% 30% at 20% 10%, rgba(0,240,255,0.4), transparent 60%);
+  pointer-events: none;
+}
+.s3::after {
+  content: ""; position: absolute;
+  bottom: 0; left: 0; right: 0; height: 50%;
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(0,240,255,0.06) 100%),
+    repeating-linear-gradient(90deg, transparent 0, transparent calc(50% - 1px), rgba(0,240,255,0.5) calc(50% - 1px), rgba(0,240,255,0.5) 50%, transparent 50%, transparent 100%);
+  perspective: 600px;
+  transform: perspective(600px) rotateX(60deg);
+  transform-origin: 50% 0%;
+  background-image:
+    linear-gradient(rgba(0,240,255,0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,240,255,0.5) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  mask: linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
+}
+.s3 .scan {
+  position: absolute; inset: 0; pointer-events: none; z-index: 5;
+  background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,0.18) 2px 4px);
+  mix-blend-mode: multiply;
+}
+.s3 > * { position: relative; z-index: 2; }
+
+.s3 .topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 36px;
+  border-bottom: 1px solid rgba(0,240,255,0.4);
+  font-size: 0.82rem; letter-spacing: 0.18em; text-transform: uppercase;
+}
+.s3 .topbar .brand {
+  font-weight: 800; color: var(--c);
+  text-shadow: 0 0 12px var(--c), 0 0 24px var(--c);
+  letter-spacing: 0.3em;
+}
+.s3 .topbar .nav { display: flex; gap: 28px; }
+.s3 .topbar .nav a { color: rgba(255,255,255,0.7); }
+.s3 .topbar .nav a.x { color: var(--c); text-shadow: 0 0 8px var(--c); }
+
+.s3 .hero {
+  text-align: center;
+  padding: 80px 40px 48px;
+}
+.s3 .hero .ey {
+  font-size: 0.84rem; letter-spacing: 0.4em;
+  color: var(--c); margin: 0 0 24px;
+  text-shadow: 0 0 10px var(--c);
+}
+.s3 .hero h1 {
+  font-size: 7.4rem; font-weight: 900;
+  letter-spacing: 0.04em; line-height: 1;
+  margin: 0 0 18px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fff 0%, #ffd6ff 50%, #ff7ad8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  text-shadow:
+    0 0 30px rgba(255,0,212,0.6),
+    0 0 60px rgba(255,0,212,0.3);
+  position: relative;
+  filter: drop-shadow(0 0 20px rgba(255,0,212,0.5));
+}
+.s3 .hero h1 em { font-style: normal; font-weight: 400; opacity: 0.8; }
+.s3 .hero .sub {
+  font-size: 1.05rem; letter-spacing: 0.24em;
+  color: rgba(255,255,255,0.86); text-transform: uppercase;
+  max-width: 720px; margin: 0 auto 32px; line-height: 1.5;
+  font-weight: 500;
+}
+.s3 .hero .sub em { font-style: normal; color: var(--c); text-shadow: 0 0 8px var(--c); }
+.s3 .hero .ctas { display: flex; justify-content: center; gap: 14px; }
+.s3 .hero .cta {
+  padding: 12px 28px; font-size: 0.88rem;
+  letter-spacing: 0.24em; font-weight: 700; text-transform: uppercase;
+  border: 2px solid var(--c); color: var(--c);
+  background: rgba(0,240,255,0.06);
+  box-shadow: 0 0 20px rgba(0,240,255,0.4), inset 0 0 20px rgba(0,240,255,0.08);
+  text-shadow: 0 0 6px var(--c);
+}
+.s3 .hero .cta.x {
+  border-color: var(--m); color: #fff;
+  background: rgba(255,0,212,0.18);
+  box-shadow: 0 0 24px rgba(255,0,212,0.6), inset 0 0 20px rgba(255,0,212,0.16);
+  text-shadow: 0 0 6px var(--m);
+}
+.s3 .hero .cta::before { content: "▶ "; }
+
+.s3 .panels {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 18px; padding: 0 40px;
+}
+.s3 .panel {
+  border: 1px solid rgba(0,240,255,0.5);
+  background: linear-gradient(180deg, rgba(255,0,212,0.08) 0%, rgba(0,240,255,0.04) 100%);
+  padding: 22px 24px;
+  position: relative;
+  box-shadow: 0 0 24px rgba(0,240,255,0.2), inset 0 1px 0 rgba(255,255,255,0.18);
+  backdrop-filter: blur(10px);
+}
+.s3 .panel::before {
+  content: ""; position: absolute; top: -1px; left: 20px;
+  width: 32px; height: 2px;
+  background: var(--c); box-shadow: 0 0 8px var(--c);
+}
+.s3 .panel .pn {
+  font-size: 0.74rem; letter-spacing: 0.3em; color: var(--c);
+  text-transform: uppercase; margin-bottom: 14px;
+  text-shadow: 0 0 6px var(--c);
+}
+.s3 .panel h3 {
+  font-size: 1.6rem; font-weight: 700;
+  letter-spacing: 0.04em; margin: 0 0 12px;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(255,0,212,0.6);
+}
+.s3 .panel p { font-size: 0.86rem; color: rgba(255,255,255,0.82); margin: 0 0 18px; line-height: 1.6; letter-spacing: 0.04em; }
+.s3 .panel .meta {
+  display: flex; gap: 18px;
+  font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  border-top: 1px solid rgba(0,240,255,0.3);
+  padding-top: 12px;
+}
+.s3 .panel .meta .a { color: var(--m); text-shadow: 0 0 6px var(--m); }
+
+.s3 .ledger {
+  margin: 36px 40px 0;
+  border: 1px solid rgba(0,240,255,0.4);
+  background: rgba(0,0,0,0.28);
+  backdrop-filter: blur(8px);
+}
+.s3 .ledger .lh {
+  padding: 12px 22px;
+  background: linear-gradient(90deg, rgba(255,0,212,0.4), rgba(0,240,255,0.25));
+  border-bottom: 1px solid rgba(0,240,255,0.4);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.86rem; letter-spacing: 0.24em; text-transform: uppercase;
+  font-weight: 700;
+}
+.s3 .ledger .lh .r { font-size: 0.72rem; opacity: 0.8; letter-spacing: 0.18em; }
+.s3 .ledger .lr {
+  display: grid; grid-template-columns: 60px 200px 1fr 120px;
+  gap: 22px; padding: 14px 22px;
+  border-bottom: 1px solid rgba(0,240,255,0.16);
+  align-items: baseline;
+  font-size: 0.84rem; letter-spacing: 0.04em;
+}
+.s3 .ledger .lr:last-child { border-bottom: 0; }
+.s3 .ledger .lr .id { color: var(--m); letter-spacing: 0.16em; text-shadow: 0 0 6px var(--m); }
+.s3 .ledger .lr .yr { color: var(--c); letter-spacing: 0.12em; text-shadow: 0 0 4px var(--c); }
+.s3 .ledger .lr .org { color: #fff; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.s3 .ledger .lr .org .role { display: block; color: rgba(255,255,255,0.7); font-weight: 400; font-size: 0.76rem; letter-spacing: 0.06em; text-transform: none; margin-top: 4px; }
+.s3 .ledger .lr .stat { text-align: right; font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; }
+.s3 .ledger .lr .stat.go { color: var(--m); text-shadow: 0 0 6px var(--m); }
+.s3 .ledger .lr .stat.dim { color: rgba(255,255,255,0.5); }
+
+/* ===================================================================
+   S4 · COLD VAULT (quiet sci-fi · Severance/2001 vibe)
+   =================================================================== */
+.s4 {
+  background: #ece6d6;
+  color: #1a1f3a;
+  font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace;
+  font-size: 13px;
+  min-height: 860px;
+  position: relative;
+  --t: #2d6a6a;
+  --n: #1a1f3a;
+}
+.s4::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(26,31,58,0.06) 1px, transparent 1px);
+  background-size: 4px 4px;
+  pointer-events: none;
+}
+.s4 > * { position: relative; }
+.s4 .topbar {
+  display: flex; align-items: center;
+  padding: 0 36px;
+  height: 44px;
+  background: var(--n);
+  color: #ece6d6;
+  font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase;
+  gap: 28px;
+}
+.s4 .topbar .badge {
+  background: var(--t); color: #ece6d6;
+  padding: 2px 10px; letter-spacing: 0.2em;
+  font-size: 0.7rem;
+}
+.s4 .topbar .nav { display: flex; gap: 24px; margin-left: auto; }
+.s4 .topbar .nav a { color: rgba(236,230,214,0.7); }
+.s4 .topbar .nav a.x { color: #ece6d6; }
+
+.s4 .ribbon {
+  display: flex; gap: 0; padding: 12px 36px;
+  font-size: 0.74rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(26,31,58,0.6);
+  border-bottom: 1px solid rgba(26,31,58,0.18);
+}
+.s4 .ribbon span { padding-right: 32px; }
+.s4 .ribbon span + span { padding-left: 32px; border-left: 1px solid rgba(26,31,58,0.18); }
+.s4 .ribbon .t { color: var(--t); }
+
+.s4 main { padding: 56px 80px 80px; }
+.s4 .lead {
+  display: grid; grid-template-columns: 70px 1fr 280px;
+  gap: 40px; padding-bottom: 36px;
+  border-bottom: 1px solid var(--n);
+  align-items: start;
+}
+.s4 .lead .num {
+  font-size: 0.74rem; letter-spacing: 0.2em;
+  color: rgba(26,31,58,0.6);
+  border-top: 2px solid var(--n);
+  padding-top: 8px;
+  text-transform: uppercase;
+}
+.s4 .lead .num em { font-style: normal; display: block; color: var(--n); margin-top: 4px; font-size: 0.84rem; letter-spacing: 0.14em; }
+.s4 .lead h1 {
+  font-size: 4.6rem; line-height: 1.02; font-weight: 600;
+  letter-spacing: -0.02em; margin: 0 0 18px;
+  text-transform: uppercase;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+.s4 .lead h1 em { font-style: normal; color: var(--t); font-weight: 400; }
+.s4 .lead .deck {
+  font-size: 1.05rem; line-height: 1.6;
+  max-width: 580px; margin: 0 0 24px;
+  color: rgba(26,31,58,0.8);
+  letter-spacing: 0.01em;
+}
+.s4 .lead .deck b { color: var(--n); font-weight: 600; }
+.s4 .lead .creed {
+  border-left: 3px solid var(--t);
+  padding: 4px 0 4px 14px;
+  font-size: 0.82rem; color: var(--t);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  max-width: 480px; line-height: 1.55;
+}
+.s4 .lead .panel {
+  border: 1px solid var(--n);
+  background: rgba(255,253,247,0.6);
+  padding: 16px 18px;
+  position: relative;
+}
+.s4 .lead .panel::before {
+  content: "RECORD"; position: absolute; top: -10px; left: 14px;
+  background: #ece6d6; padding: 0 8px;
+  font-size: 0.72rem; letter-spacing: 0.24em; color: var(--n);
+}
+.s4 .lead .panel .kv { display: grid; grid-template-columns: 100px 1fr; gap: 8px 14px; font-size: 0.8rem; letter-spacing: 0.04em; }
+.s4 .lead .panel .kv .k { color: rgba(26,31,58,0.55); letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.7rem; }
+.s4 .lead .panel .kv .v { color: var(--n); }
+.s4 .lead .panel .kv .v.t { color: var(--t); }
+
+.s4 .lead .panel .light {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px dashed rgba(26,31,58,0.3);
+  display: flex; gap: 8px; align-items: center;
+  font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--t);
+}
+.s4 .lead .panel .light .led {
+  width: 9px; height: 9px; background: var(--t);
+  box-shadow: 0 0 6px var(--t), 0 0 14px rgba(45,106,106,0.6);
+  border-radius: 50%;
+  animation: blink 1.4s steps(2) infinite;
+}
+@keyframes blink { 50% { opacity: 0.4; } }
+
+.s4 .sec { margin-top: 48px; }
+.s4 .sec-h {
+  display: grid; grid-template-columns: 70px 1fr auto;
+  gap: 40px; align-items: end;
+  border-bottom: 2px solid var(--n);
+  padding-bottom: 8px; margin-bottom: 0;
+}
+.s4 .sec-h .num { font-size: 0.74rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(26,31,58,0.6); }
+.s4 .sec-h h2 {
+  font-size: 1.6rem; margin: 0; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.s4 .sec-h h2 em { font-style: normal; color: var(--t); }
+.s4 .sec-h .meta-r { font-size: 0.74rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(26,31,58,0.55); }
+
+.s4 .arch { margin-top: 0; }
+.s4 .arch-row {
+  display: grid; grid-template-columns: 70px 160px 1fr 200px;
+  gap: 40px; padding: 24px 0;
+  border-bottom: 1px solid rgba(26,31,58,0.2);
+  align-items: baseline;
+}
+.s4 .arch-row .id4 {
+  font-size: 0.78rem; letter-spacing: 0.16em;
+  color: rgba(26,31,58,0.55);
+}
+.s4 .arch-row .yr4 {
+  font-size: 0.94rem; letter-spacing: 0.08em;
+  color: var(--n); font-weight: 600;
+}
+.s4 .arch-row .yr4 .sub { display: block; font-size: 0.72rem; color: var(--t); letter-spacing: 0.18em; text-transform: uppercase; margin-top: 4px; font-weight: 400; }
+.s4 .arch-row h3 {
+  font-size: 1.18rem; font-weight: 600;
+  margin: 0 0 6px; letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.s4 .arch-row h3 em { font-style: normal; color: var(--t); font-weight: 400; }
+.s4 .arch-row p {
+  font-size: 0.86rem; color: rgba(26,31,58,0.78);
+  margin: 0; line-height: 1.65; letter-spacing: 0.01em;
+  max-width: 560px;
+}
+.s4 .arch-row .stat-box {
+  text-align: right;
+  font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(26,31,58,0.6);
+}
+.s4 .arch-row .stat-box .pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid var(--n);
+  margin-bottom: 6px;
+  color: var(--n); font-weight: 600;
+}
+.s4 .arch-row .stat-box .pill.t { background: var(--t); color: #ece6d6; border-color: var(--t); }
+.s4 .arch-row .stat-box .loc { display: block; }
+
+.s4 .modules { display: grid; grid-template-columns: 70px repeat(3, 1fr); gap: 16px; margin-top: 18px; }
+.s4 .modules .col-l { font-size: 0.74rem; letter-spacing: 0.2em; color: rgba(26,31,58,0.6); text-transform: uppercase; padding-top: 12px; }
+.s4 .modules .mod {
+  border: 1px solid var(--n);
+  background: rgba(255,253,247,0.7);
+  padding: 18px;
+  position: relative;
+}
+.s4 .modules .mod .id5 {
+  font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--t); margin-bottom: 12px;
+}
+.s4 .modules .mod h4 {
+  font-size: 1rem; font-weight: 600; margin: 0 0 6px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  line-height: 1.25;
+}
+.s4 .modules .mod p {
+  font-size: 0.82rem; color: rgba(26,31,58,0.78);
+  margin: 0 0 14px; line-height: 1.6;
+}
+.s4 .modules .mod .footer {
+  border-top: 1px dashed rgba(26,31,58,0.3);
+  padding-top: 10px;
+  font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(26,31,58,0.55);
+  display: flex; justify-content: space-between;
+}
+.s4 .modules .mod .footer .t { color: var(--t); }
+
+</style>
+</head>
+<body>
+
+<div class="shell-head">
+  <div>
+    <h1>设计方案 <em>// SCI-FI SET</em></h1>
+    <p>四种"酷+科幻"方向。每套都用真实简历内容排好。挑一个，我把全站按它实现。</p>
+  </div>
+  <div class="meta">
+    edward zhang<br>
+    2026-05-04 · scifi set<br>
+    4 / 4 directions
+  </div>
+</div>
+
+<div class="shell-grid">
+
+  <!-- ============================================================
+       S1 · MISSION CONTROL HUD
+       ============================================================ -->
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-row">
+        <span class="opt-num">S1 / 04</span>
+        <span class="opt-title">Mission Control HUD</span>
+        <span class="opt-tag">cyan · amber · telemetry</span>
+      </div>
+      <p class="opt-desc">
+        像 NASA 任务控制 / F1 telemetry / Eve Online HUD：<b>cyan + amber 双 accent</b>，四角 bracket reticle，左侧永久 label 列像专业仪表盘，<b>右侧雷达+进度条+coord readout</b>，Experience 当 missions 排，Projects 当 assets 列。系统工程师身份最贴。
+      </p>
+    </div>
+    <div class="preview-frame">
+      <div class="preview-inner s1">
+        <div class="topband">
+          <span class="live">SYS NOMINAL</span>
+          <span class="sep">│</span>
+          <span>STATION <em>EZ-01</em></span>
+          <span class="sep">│</span>
+          <span>BEARING <em>247.3°</em></span>
+          <span class="sep">│</span>
+          <span>FLUX <em>+0.82</em></span>
+          <span class="sep">│</span>
+          <span class="alert">⚠ INCOMING DEPLOY · T−14d</span>
+          <span class="right">
+            <span>2026.05.04 · 17:42:08 PT</span>
+            <span>BIOS r2.4.0 · c8a91f</span>
+          </span>
+        </div>
+
+        <section class="mast">
+          <div class="lbl-col">
+            <span>UNIT<em>EZ-01</em></span>
+            <span>OPER<em>EDWARD</em></span>
+            <span>CLASS<em>SWE-S</em></span>
+            <span>YR<em>2027</em></span>
+            <span>HOST<em>USC</em></span>
+          </div>
+          <div class="center">
+            <div class="desig">// CALLSIGN ::: PROFILE 0042-EZH</div>
+            <h1>EDWARD<br>ZHANG <em>// SYS</em></h1>
+            <p class="lede">
+              Operating systems, distributed services, cloud-backed apps, ML serving experiments.
+              Currently logged into <b>USC</b>, deploying to <em>Google · Sunnyvale · summer 2026</em>.
+            </p>
+            <div class="badges">
+              <span>SYSTEMS</span>
+              <span>DISTRIBUTED</span>
+              <span>CLOUD</span>
+              <span class="am">ML-SYS</span>
+              <span class="gn">● ONLINE</span>
+            </div>
+          </div>
+          <div class="right-pane">
+            <div class="blk">
+              <h4>RUNTIME <em>YRS</em></h4>
+              <div class="v">3.2 <em>YRS</em></div>
+              <div class="bar"></div>
+            </div>
+            <div class="radar">
+              <span class="blip" style="top:30%;left:62%"></span>
+              <span class="blip" style="top:55%;left:38%; background:#6cff8a; box-shadow:0 0 8px #6cff8a"></span>
+              <span class="blip" style="top:70%;left:72%"></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid-section">
+          <div class="sl">SECTION<em>01</em><br><br>OBJ<em>MISSIONS</em></div>
+          <div class="sc">
+            <div class="sec-h">
+              <h2>MISSION LOG</h2>
+              <span class="meta-r">3 ENTRIES · SORT BY START_TIME ↓</span>
+            </div>
+            <table class="miss">
+              <thead>
+                <tr><th style="width:60px">ID</th><th style="width:170px">PERIOD</th><th style="width:280px">TARGET</th><th>OBJECTIVE</th><th style="width:120px;text-align:right">STATUS</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="id">M-3142</td>
+                  <td class="when">2026.05 → 08</td>
+                  <td class="target">GOOGLE<span class="sub">SWE INTERN · SUNNYVALE</span></td>
+                  <td class="obj">Incoming software engineering intern. Team and scope tba.</td>
+                  <td class="stat am" style="text-align:right"><span class="pill">QUEUED</span></td>
+                </tr>
+                <tr>
+                  <td class="id">M-2881</td>
+                  <td class="when">2024.08 → 12</td>
+                  <td class="target">LEE'S LAB<span class="sub">USC KECK · RESEARCH ENG</span></td>
+                  <td class="obj">HIV DNA sequence analysis platform · React + AWS Lambda/SQS/SES/DynamoDB · scoped Drive OAuth.</td>
+                  <td class="stat go" style="text-align:right"><span class="pill">CLEARED</span></td>
+                </tr>
+                <tr>
+                  <td class="id">M-2614</td>
+                  <td class="when">2024.05 → 07</td>
+                  <td class="target">CNEUTRAL.IO<span class="sub">FULL-STACK ENG</span></td>
+                  <td class="obj">ESG analytics APIs · Postgres + Redis · React dashboards for sustainability metrics.</td>
+                  <td class="stat dim" style="text-align:right"><span class="pill">ARCHIVED</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="grid-section" style="border-bottom:0">
+          <div class="sl">SECTION<em>02</em><br><br>OBJ<em>ASSETS</em></div>
+          <div class="sc">
+            <div class="sec-h">
+              <h2>ASSET INVENTORY</h2>
+              <span class="meta-r">3 / 7 SHOWN · ALL CLEARANCE LEVELS</span>
+            </div>
+            <div class="assets">
+              <div class="a">
+                <div class="id2">A-001 · OS</div>
+                <h4>UNIX-LIKE KERNEL</h4>
+                <p>Bootloader, paging, scheduler, ext2-ish FS, syscalls. C / x86 asm.</p>
+                <div class="kv">
+                  <span class="k">LOC</span><span class="v">14.2K</span>
+                  <span class="k">LANG</span><span class="v">C / ASM</span>
+                  <span class="k">STATUS</span><span class="v">● ACTIVE</span>
+                </div>
+              </div>
+              <div class="a">
+                <div class="id2">A-002 · DIST</div>
+                <h4>DISTRIBUTED SUITE</h4>
+                <p>Mining, Raft, geo-replicated storage. Three systems on consensus &amp; replication.</p>
+                <div class="kv">
+                  <span class="k">LOC</span><span class="v">9.2K</span>
+                  <span class="k">LANG</span><span class="v">GO</span>
+                  <span class="k">STATUS</span><span class="v">● SHIPPED</span>
+                </div>
+              </div>
+              <div class="a">
+                <div class="id2">A-003 · ML-SYS</div>
+                <h4>CACHE-AWARE ML SERVE</h4>
+                <p>Workload-driven evictions and request batching for inference latency.</p>
+                <div class="kv">
+                  <span class="k">LOC</span><span class="v">3.8K</span>
+                  <span class="k">LANG</span><span class="v">PYTHON</span>
+                  <span class="k">STATUS</span><span class="v">● WIP</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       S2 · CYBERPUNK NEO-TOKYO
+       ============================================================ -->
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-row">
+        <span class="opt-num">S2 / 04</span>
+        <span class="opt-title">Cyberpunk Neo-Tokyo</span>
+        <span class="opt-tag">yellow · redaction · glitch</span>
+      </div>
+      <p class="opt-desc">
+        Cyberpunk 2077 / 攻壳 / Akira UI 风：<b>警告黄 + 血红 + cyan hover</b>，对角 caution 条纹，垂直 kanji 边栏，<b>glitch 切片大字</b>，redaction 黑条，DOSSIER 面板，"//"路径前缀。最有反叛气质。
+      </p>
+    </div>
+    <div class="preview-frame">
+      <div class="preview-inner s2">
+        <div class="stripe"></div>
+        <div class="topinfo">
+          <span class="warn">CLEARANCE :: <span class="y">B-2</span></span>
+          <span>NODE :: <span class="red">JP-NEOTOKYO-04</span></span>
+          <span>SUBJECT :: <span class="y">EZH-0042</span></span>
+          <span>CONN :: STABLE / 12ms</span>
+          <span class="right">
+            <span>2026.05.04 ▸ 17:42 PT</span>
+            <span class="red">REC ●</span>
+          </span>
+        </div>
+        <header class="header">
+          <div class="vert">エドワード</div>
+          <nav class="nav">
+            <span class="brand">EZH // SYS_DOSS</span>
+            <a class="navi x" href="#">/index</a>
+            <a class="navi" href="#">/missions</a>
+            <a class="navi" href="#">/assets</a>
+            <a class="navi" href="#">/contact</a>
+            <a class="login" href="#">⌬ JACK_IN</a>
+          </nav>
+          <div class="vert r">開発者</div>
+        </header>
+
+        <main>
+          <div class="meta-strip">
+            <span><span class="y">▸</span> SUBJ_PROFILE</span>
+            <span><span class="c">▸</span> RECORD ID :: 0042-EZH</span>
+            <span><span class="y">▸</span> LAST_UPDATE :: 2026.05.04</span>
+            <span><span class="c">▸</span> AUTH :: SELF</span>
+          </div>
+
+          <section class="hero">
+            <div class="l">
+              <p class="nm-meta">SUBJECT // SOFTWARE-ENGINEER · CLASS_2027</p>
+              <h1>
+                EDWARD<br>ZHANG.
+                <span class="glitch1">EDWARD<br>ZHANG.</span>
+                <span class="glitch2">EDWARD<br>ZHANG.</span>
+              </h1>
+              <span class="id-blk">DOSSIER ::: 0042-EZH</span>
+              <p class="lede">
+                Builds <span class="y">operating systems</span>, <span class="red">distributed services</span>,
+                cloud-backed apps, <span class="y">ml serving</span> experiments.
+                Current node :: <span class="redact"></span> · USC, LA.
+              </p>
+              <div class="ctas">
+                <span class="cta x">RUN /missions</span>
+                <span class="cta">RUN /assets</span>
+                <span class="cta">SECURE //contact</span>
+              </div>
+            </div>
+            <div class="r">
+              <div class="kv">
+                <span class="k">// SUBJ</span><span class="v y">EDWARD ZHANG</span>
+                <span class="k">// AGE</span><span class="v">21</span>
+                <span class="k">// AFFIL</span><span class="v">USC · 2027</span>
+                <span class="k">// TIER</span><span class="v c">SYS / INFRA</span>
+                <span class="k">// STATUS</span><span class="v y">ONLINE · QUEUED FOR DEPLOY</span>
+                <span class="k">// NEXT</span><span class="v">GOOGLE SUNNYVALE · 2026.05</span>
+                <span class="k">// CONTACT</span><span class="v c">edwardzh@usc.edu</span>
+                <span class="k">// IDENT</span><span class="v">SHA: c8a91f · 2026</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h">
+              <h2>// MISSION RECORD</h2>
+              <span class="right">[ 03 ENTRIES // CHRONOLOGICAL DESC ]</span>
+            </div>
+            <div class="doss">
+              <div class="row">
+                <span class="id3">#3142</span>
+                <span class="when">2026.05 → 08</span>
+                <div class="body"><b>GOOGLE</b> // SWE INTERN, SUNNYVALE — Incoming software engineering intern. Team &amp; scope tba.</div>
+                <span class="stat act">▶ INCOMING</span>
+              </div>
+              <div class="row">
+                <span class="id3">#2881</span>
+                <span class="when">2024.08 → 12</span>
+                <div class="body"><b>LEE'S LAB · USC KECK</b> // RESEARCH ENG — HIV DNA sequence analysis platform · React + AWS Lambda/SQS/SES/DynamoDB · scoped Drive OAuth.</div>
+                <span class="stat dim">■ ARCHIVED</span>
+              </div>
+              <div class="row">
+                <span class="id3">#2614</span>
+                <span class="when">2024.05 → 07</span>
+                <div class="body"><b>CNEUTRAL.IO</b> // FULL-STACK — ESG analytics APIs · Postgres + Redis · React dashboards.</div>
+                <span class="stat dim">■ ARCHIVED</span>
+              </div>
+            </div>
+          </section>
+        </main>
+        <div class="stripe"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       S3 · TRON GRID / SYNTHWAVE
+       ============================================================ -->
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-row">
+        <span class="opt-num">S3 / 04</span>
+        <span class="opt-title">TRON Grid · Synthwave</span>
+        <span class="opt-tag">neon · perspective · glow</span>
+      </div>
+      <p class="opt-desc">
+        最直接 "cool" 的方向：紫蓝→粉橙渐变 sky + <b>透视网格地平线</b> + cyan/magenta 霓虹辉光 + 扫描线纹理 + Orbitron 几何字。所有面板都有 outer glow，跑出来像 <b>TRON: Legacy</b> 的开机界面。
+      </p>
+    </div>
+    <div class="preview-frame">
+      <div class="preview-inner s3">
+        <div class="scan"></div>
+        <header class="topbar">
+          <span class="brand">▰ EZ.SYS</span>
+          <nav class="nav">
+            <a class="x" href="#">// HOME</a>
+            <a href="#">// MISSIONS</a>
+            <a href="#">// PROJECTS</a>
+            <a href="#">// CONTACT</a>
+          </nav>
+          <span style="color:rgba(255,255,255,0.7); font-size:0.7rem;">▶ NODE 042 · LA</span>
+        </header>
+        <section class="hero">
+          <p class="ey">▸ SOFTWARE ENGINEER ◂</p>
+          <h1>EDWARD <em>//</em> ZHANG</h1>
+          <p class="sub">SYSTEMS <em>·</em> DISTRIBUTED <em>·</em> CLOUD <em>·</em> ML-SERVING<br>USC · CLASS OF 2027</p>
+          <div class="ctas">
+            <span class="cta x">▶ ENTER GRID</span>
+            <span class="cta">▷ VIEW LOG</span>
+          </div>
+        </section>
+
+        <div class="panels">
+          <div class="panel">
+            <div class="pn">▸ ASSET 01 · OS</div>
+            <h3>UNIX KERNEL</h3>
+            <p>Bootloader, paging, scheduler, ext2-ish FS, syscalls. C / x86 asm — written from scratch.</p>
+            <div class="meta"><span>14.2K LOC</span><span class="a">● ACTIVE</span></div>
+          </div>
+          <div class="panel">
+            <div class="pn">▸ ASSET 02 · DIST</div>
+            <h3>RAFT &amp; REPL</h3>
+            <p>Mining, consensus, geo-replicated storage. Three systems exploring consistency tradeoffs.</p>
+            <div class="meta"><span>9.2K LOC</span><span class="a">● SHIPPED</span></div>
+          </div>
+          <div class="panel">
+            <div class="pn">▸ ASSET 03 · ML</div>
+            <h3>SERVE-CACHE</h3>
+            <p>Workload-driven evictions and request batching to drive down inference latency.</p>
+            <div class="meta"><span>3.8K LOC</span><span class="a">● WIP</span></div>
+          </div>
+        </div>
+
+        <div class="ledger">
+          <div class="lh">
+            <span>▰▰ MISSION LEDGER</span>
+            <span class="r">// 03 ENTRIES · CHRON DESC</span>
+          </div>
+          <div class="lr">
+            <span class="id">#3142</span>
+            <span class="yr">2026.05—08</span>
+            <span class="org">GOOGLE<span class="role">SWE Intern · Sunnyvale, CA</span></span>
+            <span class="stat go">▶ INCOMING</span>
+          </div>
+          <div class="lr">
+            <span class="id">#2881</span>
+            <span class="yr">2024.08—12</span>
+            <span class="org">LEE'S LAB<span class="role">Research Engineer · USC Keck</span></span>
+            <span class="stat dim">■ ARCHIVED</span>
+          </div>
+          <div class="lr">
+            <span class="id">#2614</span>
+            <span class="yr">2024.05—07</span>
+            <span class="org">CNEUTRAL.IO<span class="role">Full-stack Engineer · ESG analytics</span></span>
+            <span class="stat dim">■ ARCHIVED</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       S4 · COLD VAULT
+       ============================================================ -->
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-row">
+        <span class="opt-num">S4 / 04</span>
+        <span class="opt-title">Cold Vault</span>
+        <span class="opt-tag">muted · ritual · archival</span>
+      </div>
+      <p class="opt-desc">
+        安静的反乌托邦科幻 — <b>Severance / 2001 / Foundation</b> 的味道。奶油白纸基（#ece6d6）+ 海军蓝 ink + teal CRT 微光，IBM Plex Mono 全大写，标本式编号 (RECORD / ENTRY 0001-3142)，灯泡式 LED 状态指示。冷酷克制，反而是最有质感的"科幻"。
+      </p>
+    </div>
+    <div class="preview-frame">
+      <div class="preview-inner s4">
+        <div class="topbar">
+          <span class="badge">VAULT</span>
+          <span>EZ.ARCHIVE / TERMINAL 04</span>
+          <nav class="nav">
+            <a class="x" href="#">INDEX</a>
+            <a href="#">RECORDS</a>
+            <a href="#">MODULES</a>
+            <a href="#">CONTACT</a>
+          </nav>
+        </div>
+        <div class="ribbon">
+          <span>SUBJECT <span class="t">EZH-0042</span></span>
+          <span>FILE OPENED <span class="t">2026.05.04</span></span>
+          <span>STATUS <span class="t">● ACTIVE — DEPLOY QUEUED</span></span>
+          <span>CLEARANCE <span class="t">B-2</span></span>
+        </div>
+        <main>
+          <section class="lead">
+            <div class="num">FILE<em>00.</em>00</div>
+            <div>
+              <h1>EDWARD<br>ZHANG <em>// SUBJECT</em></h1>
+              <p class="deck">
+                Software engineer, undergraduate. Specialty <b>operating systems</b>,
+                distributed services, cloud-backed applications, and recent experiments in
+                <b>ML serving</b>. Currently logged into USC; queued for deployment to Google,
+                Sunnyvale, summer 2026.
+              </p>
+              <p class="creed">// THE WORK IS SLOW. THE WORK IS DELIBERATE. THE WORK IS REMEMBERED.</p>
+            </div>
+            <div class="panel">
+              <div class="kv">
+                <span class="k">SUBJECT</span><span class="v">EDWARD ZHANG</span>
+                <span class="k">DESIG</span><span class="v">EZH-0042</span>
+                <span class="k">CLASS</span><span class="v">SWE-S</span>
+                <span class="k">HOST</span><span class="v">USC · 2027</span>
+                <span class="k">FOCUS</span><span class="v t">SYS / INFRA / ML-SYS</span>
+                <span class="k">NEXT</span><span class="v">GOOGLE · 2026.05</span>
+                <span class="k">CONTACT</span><span class="v">edwardzh@usc.edu</span>
+              </div>
+              <div class="light"><span class="led"></span> SIGNAL · ACTIVE</div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h">
+              <span class="num">FILE<br>01</span>
+              <h2>RECORDS // <em>WHERE THE WORK HAS HAPPENED</em></h2>
+              <span class="meta-r">03 ENTRIES</span>
+            </div>
+            <div class="arch">
+              <div class="arch-row">
+                <span class="id4">REC.3142</span>
+                <span class="yr4">2026<span class="sub">May → Aug</span></span>
+                <div>
+                  <h3>GOOGLE <em>// SWE INTERN</em></h3>
+                  <p>Incoming for the summer in Sunnyvale, California. Specifics will be filled in once on-site.</p>
+                </div>
+                <div class="stat-box">
+                  <span class="pill t">QUEUED</span>
+                  <span class="loc">SUNNYVALE, CA</span>
+                </div>
+              </div>
+              <div class="arch-row">
+                <span class="id4">REC.2881</span>
+                <span class="yr4">2024<span class="sub">Aug → Dec</span></span>
+                <div>
+                  <h3>LEE'S LAB <em>// USC KECK</em></h3>
+                  <p>Built a web platform for HIV DNA sequence analysis: React, AWS Lambda + SQS + SES + DynamoDB, scoped Drive OAuth.</p>
+                </div>
+                <div class="stat-box">
+                  <span class="pill">SHIPPED</span>
+                  <span class="loc">LOS ANGELES, CA</span>
+                </div>
+              </div>
+              <div class="arch-row">
+                <span class="id4">REC.2614</span>
+                <span class="yr4">2024<span class="sub">May → Jul</span></span>
+                <div>
+                  <h3>CNEUTRAL.IO <em>// FULL-STACK</em></h3>
+                  <p>ESG analytics APIs over Postgres, Redis caching, React dashboards for sustainability metrics on public companies.</p>
+                </div>
+                <div class="stat-box">
+                  <span class="pill">SHIPPED</span>
+                  <span class="loc">REMOTE</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h">
+              <span class="num">FILE<br>02</span>
+              <h2>MODULES // <em>SELECTED ASSETS</em></h2>
+              <span class="meta-r">03 / 07 SHOWN</span>
+            </div>
+            <div class="modules">
+              <div class="col-l">UNIT<br>02.A–C</div>
+              <div class="mod">
+                <div class="id5">MOD.02-A · OS</div>
+                <h4>UNIX-LIKE KERNEL</h4>
+                <p>Bootloader, paging, scheduler, ext2-ish FS, syscalls. C / x86 asm — written from scratch.</p>
+                <div class="footer"><span>14.2K LOC</span><span class="t">● ACTIVE</span></div>
+              </div>
+              <div class="mod">
+                <div class="id5">MOD.02-B · DIST</div>
+                <h4>RAFT &amp; REPL SUITE</h4>
+                <p>Three systems on consensus and geo-replication. Tradeoffs in consistency vs. availability.</p>
+                <div class="footer"><span>9.2K LOC</span><span>● SHIPPED</span></div>
+              </div>
+              <div class="mod">
+                <div class="id5">MOD.02-C · ML-SYS</div>
+                <h4>SERVE-CACHE</h4>
+                <p>Workload-driven evictions and batching to drive down inference latency.</p>
+                <div class="footer"><span>3.8K LOC</span><span class="t">● WIP</span></div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

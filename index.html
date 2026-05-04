@@ -7,94 +7,130 @@
       name="description"
       content="Edward Zhang is a software engineer focused on operating systems, distributed systems, cloud infrastructure, and ML systems."
     >
-    <title>Edward Zhang | Software Engineer</title>
+    <title>edward@portfolio:~$ whoami</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
+    <div class="topbar">
+      <span class="dot"></span>
+      <span>edward@portfolio</span>
+      <span class="sep">│</span>
+      <span>~/index</span>
+      <span class="sep hide-sm">│</span>
+      <span class="hide-sm">tmux 0:0*</span>
+      <span class="right">2026-05-04 · uptime 3y 2m · load 0.42 0.38 0.35</span>
+    </div>
+
     <header class="site-header">
-      <a class="brand" href="index.html" aria-label="Edward Zhang home">
-        <span class="brand-mark">EZ</span>
-        <span>Edward Zhang</span>
-      </a>
+      <div class="prompt">
+        <span class="u">edward</span><span class="p">@portfolio</span>:<span class="p">~</span>$ <span class="c">whoami --verbose</span>
+      </div>
       <nav class="nav-links" aria-label="Primary navigation">
-        <a href="experience.html">Experience</a>
-        <a href="projects.html">Projects</a>
-        <a href="contact.html">Contact</a>
-        <a href="assets/Edward_Zhang_Resume.pdf" target="_blank" rel="noreferrer">Resume</a>
+        <a class="active" href="index.html">~/index</a>
+        <a href="experience.html">~/experience</a>
+        <a href="projects.html">~/projects</a>
+        <a href="contact.html">~/contact</a>
+        <a href="assets/Edward_Zhang_Resume.pdf" target="_blank" rel="noreferrer">resume.pdf</a>
       </nav>
     </header>
 
     <main>
       <section class="intro">
-        <p class="eyebrow">Software engineer</p>
-        <h1>Edward Zhang</h1>
+        <p class="eyebrow">role · software engineer · systems &amp; infra</p>
+        <h1>edward_zhang<span class="cursor"></span></h1>
         <p class="intro-lede">
-          I focus on systems and infrastructure: operating systems, distributed services,
-          cloud-backed applications, and ML serving experiments.
+          building <span class="k">operating systems</span>, <span class="k">distributed services</span>,
+          <span class="s">cloud-backed apps</span>, and <span class="s">ML serving</span> experiments.
+          currently @ CMU (M.S.) &amp; USC (B.S., '24). incoming SWE intern @ Google, summer '26.
         </p>
         <div class="link-row">
-          <a class="button primary" href="experience.html">Experience</a>
-          <a class="button" href="projects.html">Projects</a>
-          <a class="button" href="contact.html">Contact</a>
+          <a class="button primary" href="experience.html">cat experience.md</a>
+          <a class="button" href="projects.html">ls projects/</a>
+          <a class="button" href="contact.html">curl /contact</a>
         </div>
       </section>
 
       <section class="section-block">
         <div class="section-heading">
-          <p class="eyebrow">Experience</p>
-          <h2>Experience</h2>
+          <p class="eyebrow">experience</p>
+          <h2>ps -ef --sort=start_time</h2>
+          <span class="meta-r">3 processes · 1 queued · 2 exited 0</span>
         </div>
         <div class="timeline">
           <article class="timeline-item">
-            <p class="time">May 2026 - Aug 2026</p>
+            <p class="pid">3142</p>
+            <p class="time">2026.05 → 08</p>
             <div>
-              <h3>Google</h3>
-              <p>Incoming Software Engineer Intern in Sunnyvale, CA.</p>
+              <h3>google <span class="role" style="display:inline">// swe intern · sunnyvale</span></h3>
+              <p>Incoming software engineering intern. Team and scope tba.</p>
             </div>
+            <p class="stat live">queued</p>
           </article>
           <article class="timeline-item">
-            <p class="time">Aug 2024 - Dec 2024</p>
+            <p class="pid">2881</p>
+            <p class="time">2024.08 → 12</p>
             <div>
-              <h3>Lee's Lab at USC Keck School of Medicine</h3>
-              <p>
-                Built a web-based DNA sequence analysis platform for HIV research using React,
-                AWS Lambda, SQS, SES, DynamoDB, and scoped Google Drive OAuth.
-              </p>
+              <h3>lee's lab · usc keck <span class="role" style="display:inline">// research engineer</span></h3>
+              <p>Built a web-based DNA sequence analysis platform for HIV research using React, AWS Lambda, SQS, SES, DynamoDB, and scoped Drive OAuth.</p>
             </div>
+            <p class="stat done">exit 0</p>
           </article>
           <article class="timeline-item">
-            <p class="time">May 2024 - Jul 2024</p>
+            <p class="pid">2614</p>
+            <p class="time">2024.05 → 07</p>
             <div>
-              <h3>CNeutral.io</h3>
-              <p>
-                Developed ESG analytics APIs, PostgreSQL data paths, Redis caching, and React
-                dashboards for public-company sustainability metrics.
-              </p>
+              <h3>cneutral.io <span class="role" style="display:inline">// full-stack</span></h3>
+              <p>ESG analytics APIs over PostgreSQL + Redis caching, plus React dashboards for sustainability metrics on 10k+ public companies.</p>
             </div>
+            <p class="stat done">exit 0</p>
           </article>
         </div>
       </section>
 
       <section class="section-block">
         <div class="section-heading">
-          <p class="eyebrow">Projects</p>
-          <h2>Selected project areas</h2>
+          <p class="eyebrow">projects</p>
+          <h2>ls -la ~/projects/</h2>
+          <span class="meta-r">total 5 · sorted by depth desc</span>
         </div>
         <div class="summary-grid">
           <a class="summary-card" href="projects.html#kernel">
-            <span>Operating Systems</span>
-            <strong>Unix-like kernel from scratch</strong>
+            <span class="perm">drwxr-xr-x</span>
+            <span class="sz">14k loc</span>
+            <span class="dt">2025-12</span>
+            <span class="nm">unix-kernel</span>
+            <span class="tag">[c, x86, paging, fs]</span>
           </a>
           <a class="summary-card" href="projects.html#distributed">
-            <span>Distributed Systems</span>
-            <strong>Mining, Raft, and geo-replicated storage</strong>
+            <span class="perm">drwxr-xr-x</span>
+            <span class="sz">9.2k loc</span>
+            <span class="dt">2025-10</span>
+            <span class="nm">distributed/</span>
+            <span class="tag">[raft, mining, kvs]</span>
+          </a>
+          <a class="summary-card" href="projects.html#mlsys">
+            <span class="perm">drwxr-xr-x</span>
+            <span class="sz">3.8k loc</span>
+            <span class="dt">2025-09</span>
+            <span class="nm">ml-cache-serve</span>
+            <span class="tag">[llm, kv-cache, eviction]</span>
           </a>
           <a class="summary-card" href="projects.html">
-            <span>Full Portfolio</span>
-            <strong>Kernel, distributed systems, ML cache, and full-stack app projects</strong>
+            <span class="perm">drwxr-xr-x</span>
+            <span class="sz">—</span>
+            <span class="dt">2024-12</span>
+            <span class="nm">restaurant-review</span>
+            <span class="tag">[spring-boot, react, maps]</span>
           </a>
         </div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <span>// built from scratch · no framework</span>
+      <span class="sep">│</span>
+      <span><a href="https://github.com/Riaria9/riaria9.github.io" target="_blank" rel="noreferrer">source ↗</a></span>
+      <span class="right">© 2026 edward zhang · last build c8a91f</span>
+    </footer>
   </body>
 </html>

@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>设计方案 · 重做</title>
+<style>
+/* ===================================================================
+   SHOWCASE SHELL
+   =================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #0a0a0a;
+  color: #ededed;
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.shell-head {
+  padding: 56px 64px 40px;
+  border-bottom: 1px solid #1a1a1a;
+  display: flex; align-items: end; justify-content: space-between;
+  gap: 32px;
+}
+.shell-head h1 {
+  font-size: 1.75rem; margin: 0 0 8px;
+  letter-spacing: -0.02em; font-weight: 700;
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+}
+.shell-head h1 em { font-style: italic; color: #888; font-weight: 400; }
+.shell-head p { color: #777; margin: 0; font-size: 0.9rem; max-width: 540px; line-height: 1.6; }
+.shell-head .meta {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.72rem; color: #555; text-align: right;
+  letter-spacing: 0.04em;
+}
+.shell-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: #161616;
+  border-top: 1px solid #161616;
+}
+.opt {
+  background: #0a0a0a;
+  display: flex; flex-direction: column;
+  min-height: 560px;
+}
+.opt-head {
+  padding: 26px 32px 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.opt-row {
+  display: flex; align-items: center; gap: 14px;
+}
+.opt-num {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.7rem; color: #666; letter-spacing: 0.1em;
+}
+.opt-title { font-size: 1.1rem; font-weight: 600; color: #ededed; letter-spacing: -0.01em; }
+.opt-tag {
+  margin-left: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.66rem; color: #888;
+  padding: 4px 10px; border: 1px solid #2a2a2a; border-radius: 100px;
+  letter-spacing: 0.04em;
+}
+.opt-desc { font-size: 0.84rem; color: #888; line-height: 1.55; max-width: 520px; }
+.opt-desc b { color: #ccc; font-weight: 500; }
+.preview-frame {
+  flex: 1;
+  border-top: 1px solid #161616;
+  height: 480px;
+  overflow: hidden;
+  position: relative;
+}
+.preview-inner {
+  width: 1280px;
+  transform: scale(0.5);
+  transform-origin: top left;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ===================================================================
+   DESIGN 1 · EDITORIAL PRINT
+   warm paper, serif display, 12-col visible grid, hanging years
+   =================================================================== */
+.d1 {
+  background: #f6f1e7;
+  color: #14110b;
+  font-family: "Inter", ui-sans-serif, sans-serif;
+  font-size: 16px;
+  position: relative;
+}
+.d1::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: linear-gradient(to right, rgba(20,17,11,0.04) 1px, transparent 1px);
+  background-size: calc(100% / 12) 100%;
+  pointer-events: none;
+}
+.d1 .hdr {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 28px 72px 24px;
+  border-bottom: 1px solid #14110b;
+  position: relative; z-index: 1;
+}
+.d1 .brand {
+  font-family: ui-serif, "Times New Roman", Georgia, serif;
+  font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em;
+}
+.d1 .brand em { font-style: italic; color: #6b5d44; font-weight: 400; }
+.d1 .nav {
+  display: flex; gap: 32px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.74rem; letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.d1 .nav a { color: #14110b; }
+.d1 .nav a.x { color: #6b5d44; }
+.d1 main { padding: 64px 72px 80px; position: relative; z-index: 1; }
+.d1 .lead { display: grid; grid-template-columns: 80px 1fr 280px; gap: 32px; align-items: start; }
+.d1 .lead .num {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.74rem; color: #6b5d44; letter-spacing: 0.1em; padding-top: 18px;
+}
+.d1 .lead .num span { display: block; color: #14110b; font-size: 0.66rem; margin-top: 4px; }
+.d1 h1 {
+  font-family: ui-serif, "Times New Roman", Georgia, serif;
+  font-size: 6.4rem; line-height: 0.94; font-weight: 500;
+  letter-spacing: -0.035em; margin: 0;
+}
+.d1 h1 em { font-style: italic; color: #6b5d44; font-weight: 400; }
+.d1 .lede {
+  font-family: ui-serif, "Times New Roman", Georgia, serif;
+  font-size: 1.2rem; line-height: 1.5; color: #2a2418; margin: 0; max-width: 320px;
+}
+.d1 .lede::first-letter {
+  font-size: 3.6rem; float: left; line-height: 0.8;
+  margin: 6px 8px 0 -2px; font-weight: 600;
+}
+.d1 .meta {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.72rem; color: #6b5d44; text-transform: uppercase;
+  letter-spacing: 0.08em; margin-top: 18px;
+  border-top: 1px solid #14110b; padding-top: 8px;
+}
+.d1 .sec { margin-top: 72px; }
+.d1 .sh {
+  display: grid; grid-template-columns: 80px 1fr;
+  gap: 32px; padding-bottom: 14px; border-bottom: 2px solid #14110b;
+  align-items: end; margin-bottom: 4px;
+}
+.d1 .sh .num {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.74rem; color: #6b5d44; letter-spacing: 0.1em;
+}
+.d1 .sh h2 {
+  font-family: ui-serif, "Times New Roman", Georgia, serif;
+  font-size: 2rem; font-weight: 500; margin: 0;
+  letter-spacing: -0.02em;
+}
+.d1 .sh h2 em { font-style: italic; color: #6b5d44; font-weight: 400; }
+.d1 .row {
+  display: grid; grid-template-columns: 80px 280px 1fr;
+  gap: 32px; padding: 24px 0;
+  border-bottom: 1px solid rgba(20,17,11,0.18);
+  align-items: baseline;
+}
+.d1 .row .yr {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.78rem; color: #6b5d44; letter-spacing: 0.06em;
+  font-feature-settings: "tnum";
+}
+.d1 .row h3 {
+  font-family: ui-serif, "Times New Roman", Georgia, serif;
+  font-size: 1.35rem; font-weight: 500; margin: 0;
+  letter-spacing: -0.01em;
+}
+.d1 .row h3 em { font-style: italic; font-weight: 400; }
+.d1 .row p {
+  font-size: 0.92rem; line-height: 1.65; color: #2a2418; margin: 0;
+}
+.d1 .row p .small {
+  display: block; font-family: ui-monospace, monospace;
+  font-size: 0.72rem; color: #6b5d44; margin-top: 6px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.d1 .pgrid {
+  display: grid; grid-template-columns: 80px 1fr 1fr 1fr;
+  gap: 32px; margin-top: 28px;
+}
+.d1 .pgrid .num {
+  font-family: ui-monospace, monospace; font-size: 0.74rem;
+  color: #6b5d44; letter-spacing: 0.1em;
+}
+.d1 .pcard { border-top: 2px solid #14110b; padding-top: 14px; }
+.d1 .pcard .pn {
+  font-family: ui-monospace, monospace; font-size: 0.7rem;
+  color: #6b5d44; letter-spacing: 0.08em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.d1 .pcard h4 {
+  font-family: ui-serif, "Times New Roman", Georgia, serif;
+  font-size: 1.15rem; font-weight: 500; margin: 0 0 8px;
+  line-height: 1.2;
+}
+.d1 .pcard p { font-size: 0.88rem; line-height: 1.55; color: #2a2418; margin: 0; }
+
+/* ===================================================================
+   DESIGN 2 · SYSTEMS TERMINAL
+   warm dark, mono primary, ANSI-style accents, ps/ls layout
+   =================================================================== */
+.d2 {
+  background: #0e0f10;
+  color: #d6d3cd;
+  font-family: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.d2 .topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 24px; background: #15171a;
+  border-bottom: 1px solid #22242a;
+  font-size: 0.8rem; color: #6c6f76;
+}
+.d2 .topbar .dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: #6cc644; box-shadow: 0 0 6px rgba(108,198,68,0.6);
+}
+.d2 .topbar .sep { color: #383b40; }
+.d2 .topbar .right { margin-left: auto; }
+.d2 .hdr {
+  padding: 22px 56px 26px;
+  border-bottom: 1px solid #22242a;
+}
+.d2 .prompt { color: #6c6f76; font-size: 0.92rem; }
+.d2 .prompt .u { color: #6cc644; }
+.d2 .prompt .p { color: #5b9cd6; }
+.d2 .prompt .c { color: #d6d3cd; }
+.d2 .nav { display: flex; gap: 22px; margin-top: 18px; font-size: 0.85rem; }
+.d2 .nav a { color: #6c6f76; }
+.d2 .nav a.x { color: #f0a000; }
+.d2 .nav a::before { content: "› "; color: #383b40; }
+.d2 main { padding: 48px 56px 72px; }
+.d2 .ey {
+  color: #6cc644; font-size: 0.78rem; margin-bottom: 14px;
+  letter-spacing: 0.04em;
+}
+.d2 .ey::before { content: "// "; color: #383b40; }
+.d2 h1 {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 4.4rem; font-weight: 700; margin: 0 0 22px;
+  line-height: 1; letter-spacing: -0.04em; color: #ededed;
+}
+.d2 h1 .cursor {
+  display: inline-block; width: 0.5em; height: 1em;
+  background: #f0a000; margin-left: 0.1em;
+  vertical-align: -0.12em;
+  animation: blink 1.1s steps(2) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+.d2 .lede {
+  font-size: 1rem; color: #a3a8b0; max-width: 640px;
+  line-height: 1.7; margin: 0 0 34px;
+}
+.d2 .lede .k { color: #f0a000; }
+.d2 .lede .s { color: #6cc644; }
+.d2 .btns { display: flex; gap: 0; }
+.d2 .btn {
+  padding: 9px 18px; border: 1px solid #2a2d33;
+  font-size: 0.82rem; color: #d6d3cd;
+  margin-right: -1px;
+}
+.d2 .btn.x { background: #f0a000; color: #0e0f10; border-color: #f0a000; }
+.d2 .btn::before { content: "[ "; color: #6c6f76; }
+.d2 .btn::after { content: " ]"; color: #6c6f76; }
+.d2 .btn.x::before, .d2 .btn.x::after { color: rgba(14,15,16,0.6); }
+.d2 .sec { margin-top: 62px; }
+.d2 .sh {
+  display: flex; align-items: baseline; gap: 12px;
+  padding-bottom: 14px; border-bottom: 1px solid #22242a;
+  margin-bottom: 0;
+}
+.d2 .sh .pf { color: #6cc644; font-size: 0.85rem; }
+.d2 .sh h2 { font-size: 1.1rem; font-weight: 700; margin: 0; color: #ededed; }
+.d2 .sh .meta { margin-left: auto; color: #6c6f76; font-size: 0.78rem; }
+.d2 .ps {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.86rem;
+}
+.d2 .ps th {
+  text-align: left; padding: 10px 0;
+  color: #6c6f76; font-weight: 400;
+  border-bottom: 1px solid #22242a;
+  font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.d2 .ps td {
+  padding: 14px 16px 14px 0;
+  border-bottom: 1px solid #1a1c20;
+  vertical-align: top;
+}
+.d2 .ps td:first-child { padding-left: 0; }
+.d2 .ps .pid { color: #f0a000; }
+.d2 .ps .when { color: #5b9cd6; white-space: nowrap; }
+.d2 .ps .role { color: #ededed; font-weight: 600; }
+.d2 .ps .role .at { color: #6c6f76; font-weight: 400; }
+.d2 .ps .desc { color: #a3a8b0; }
+.d2 .ps .stat { color: #6cc644; font-size: 0.74rem; }
+.d2 .ls { margin-top: 18px; font-size: 0.85rem; color: #a3a8b0; }
+.d2 .ls .h { color: #6c6f76; padding-bottom: 8px; border-bottom: 1px solid #22242a; margin-bottom: 6px; }
+.d2 .ls .row {
+  display: grid;
+  grid-template-columns: 90px 80px 80px 1fr 240px;
+  gap: 18px; padding: 8px 0;
+  border-bottom: 1px solid #1a1c20;
+  align-items: baseline;
+}
+.d2 .ls .perm { color: #6c6f76; }
+.d2 .ls .sz { color: #f0a000; }
+.d2 .ls .dt { color: #5b9cd6; }
+.d2 .ls .nm { color: #ededed; font-weight: 600; }
+.d2 .ls .nm::before { content: "./"; color: #6c6f76; font-weight: 400; }
+.d2 .ls .tag { color: #6cc644; font-size: 0.78rem; }
+
+/* ===================================================================
+   DESIGN 3 · ARCHIVE QUIET
+   reading-first, single column, drop cap, marginal years
+   =================================================================== */
+.d3 {
+  background: #fdfdfb;
+  color: #1a1a1a;
+  font-family: "Source Serif Pro", "Charter", "Iowan Old Style", Georgia, serif;
+  font-size: 17px;
+  line-height: 1.7;
+}
+.d3 .hdr {
+  padding: 38px 96px 28px;
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 1px solid #e6e1d6;
+}
+.d3 .brand { font-size: 1rem; font-weight: 500; }
+.d3 .brand em { font-style: italic; color: #888; font-weight: 400; }
+.d3 .nav {
+  display: flex; gap: 28px;
+  font-family: "Inter", ui-sans-serif, sans-serif;
+  font-size: 0.78rem; letter-spacing: 0.04em;
+}
+.d3 .nav a { color: #555; }
+.d3 .nav a.x { color: #1a1a1a; text-decoration: underline; text-underline-offset: 4px; }
+.d3 main {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 580px) 1fr;
+  gap: 56px; padding: 88px 96px 100px;
+}
+.d3 .toc {
+  font-family: "Inter", ui-sans-serif, sans-serif;
+  font-size: 0.78rem; color: #888;
+  position: sticky; top: 32px;
+  align-self: start;
+}
+.d3 .toc .label {
+  text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 0.66rem; color: #aaa; margin-bottom: 14px;
+}
+.d3 .toc ol {
+  list-style: none; padding: 0; margin: 0;
+  counter-reset: t;
+}
+.d3 .toc li {
+  counter-increment: t;
+  padding: 5px 0; display: flex; gap: 10px;
+  border-top: 1px solid #ece7da;
+}
+.d3 .toc li::before {
+  content: counter(t, decimal-leading-zero);
+  color: #bbb; font-feature-settings: "tnum";
+}
+.d3 .toc li.x { color: #1a1a1a; }
+.d3 .col { max-width: 580px; }
+.d3 .ey {
+  font-family: "Inter", ui-sans-serif, sans-serif;
+  font-size: 0.74rem; color: #888;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin: 0 0 24px;
+}
+.d3 h1 {
+  font-size: 3.6rem; line-height: 1.05;
+  font-weight: 400; margin: 0 0 28px;
+  letter-spacing: -0.02em;
+}
+.d3 h1 em { font-style: italic; }
+.d3 .lede {
+  font-size: 1.18rem; line-height: 1.55;
+  color: #2a2a2a; margin: 0 0 18px;
+  font-style: italic;
+  text-indent: 0;
+}
+.d3 .body {
+  font-size: 1rem; line-height: 1.75;
+  color: #2a2a2a; margin: 0;
+}
+.d3 .body::first-letter {
+  font-size: 3.6rem; float: left; line-height: 0.86;
+  margin: 8px 10px 0 0; font-weight: 500;
+}
+.d3 .body sup { color: #888; font-size: 0.7em; }
+.d3 .sec { margin-top: 72px; }
+.d3 .sh {
+  margin-bottom: 26px; display: flex; align-items: baseline; gap: 18px;
+  padding-bottom: 4px;
+}
+.d3 .sh .num {
+  font-family: "Inter", ui-sans-serif, sans-serif;
+  font-size: 0.78rem; color: #aaa;
+  font-feature-settings: "tnum"; letter-spacing: 0.04em;
+}
+.d3 .sh h2 {
+  font-size: 1.6rem; font-weight: 400;
+  margin: 0; letter-spacing: -0.01em;
+}
+.d3 .sh h2 em { font-style: italic; }
+.d3 .entry {
+  position: relative;
+  padding: 16px 0 22px;
+  border-bottom: 1px solid #ece7da;
+}
+.d3 .entry .yr {
+  position: absolute; left: -200px; top: 18px;
+  width: 200px;
+  font-family: "Inter", ui-sans-serif, sans-serif;
+  font-size: 0.78rem; color: #888;
+  font-feature-settings: "tnum";
+  text-align: left; padding-right: 32px;
+}
+.d3 .entry .yr .place {
+  display: block; font-size: 0.72rem; color: #aaa;
+  margin-top: 2px; letter-spacing: 0.04em;
+}
+.d3 .entry h3 {
+  font-size: 1.2rem; font-weight: 500; margin: 0 0 6px;
+  letter-spacing: -0.005em;
+}
+.d3 .entry h3 em { font-style: italic; font-weight: 400; color: #555; }
+.d3 .entry p {
+  font-size: 0.96rem; line-height: 1.65;
+  color: #4a4a4a; margin: 0;
+}
+.d3 .footnote {
+  margin-top: 28px; padding-top: 16px;
+  border-top: 1px solid #ece7da;
+  font-family: "Inter", ui-sans-serif, sans-serif;
+  font-size: 0.78rem; color: #888;
+  line-height: 1.6;
+}
+.d3 .footnote sup { margin-right: 6px; }
+
+/* ===================================================================
+   DESIGN 4 · DENSE MINIMAL
+   white, hairline tables, mono numerics, signal red status, ultra-dense
+   =================================================================== */
+.d4 {
+  background: #ffffff;
+  color: #0a0a0a;
+  font-family: "Inter", ui-sans-serif, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  font-feature-settings: "ss01", "cv11";
+}
+.d4 .hdr {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 32px;
+  height: 48px;
+  border-bottom: 1px solid #0a0a0a;
+}
+.d4 .brand-mark {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 500; font-size: 0.84rem;
+  letter-spacing: -0.005em;
+}
+.d4 .brand-mark svg { display: block; }
+.d4 .brand-mark .stat {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-left: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.7rem; color: #717171;
+}
+.d4 .brand-mark .stat::before {
+  content: ""; width: 6px; height: 6px;
+  background: #ff3b30; border-radius: 50%;
+}
+.d4 .nav {
+  display: flex;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.74rem;
+}
+.d4 .nav a {
+  padding: 0 14px; height: 48px;
+  display: inline-flex; align-items: center;
+  color: #717171;
+  border-left: 1px solid #e5e5e5;
+  letter-spacing: 0.02em;
+}
+.d4 .nav a:last-child { border-right: 1px solid #e5e5e5; }
+.d4 .nav a.x { color: #0a0a0a; }
+.d4 .right {
+  text-align: right;
+  font-family: ui-monospace, monospace;
+  font-size: 0.7rem; color: #717171;
+}
+.d4 main { padding: 48px 32px 64px; }
+.d4 .lead {
+  display: grid;
+  grid-template-columns: 80px 1fr 320px;
+  gap: 40px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid #0a0a0a;
+}
+.d4 .lead .idx {
+  font-family: ui-monospace, monospace;
+  font-size: 0.7rem; color: #a3a3a3;
+  letter-spacing: 0.04em;
+  border-top: 1px solid #0a0a0a;
+  padding-top: 10px;
+}
+.d4 h1 {
+  font-size: 4.6rem; font-weight: 500;
+  letter-spacing: -0.04em; line-height: 0.96;
+  margin: 0 0 18px;
+  font-family: "Inter", ui-sans-serif, sans-serif;
+}
+.d4 h1 .light { font-weight: 200; color: #717171; }
+.d4 .lede {
+  font-size: 0.96rem; line-height: 1.6; color: #404040;
+  max-width: 480px; margin: 0;
+}
+.d4 .meta {
+  border-top: 1px solid #0a0a0a;
+  padding-top: 10px;
+  display: grid; gap: 6px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem; line-height: 1.5;
+}
+.d4 .meta .kv {
+  display: grid; grid-template-columns: 80px 1fr; gap: 12px;
+}
+.d4 .meta .k { color: #a3a3a3; letter-spacing: 0.04em; }
+.d4 .meta .v { color: #0a0a0a; }
+.d4 .meta .v .red { color: #ff3b30; }
+.d4 .sec {
+  margin-top: 36px;
+  display: grid; grid-template-columns: 80px 1fr;
+  gap: 40px;
+}
+.d4 .sec .label {
+  font-family: ui-monospace, monospace;
+  font-size: 0.7rem; color: #a3a3a3;
+  letter-spacing: 0.06em;
+  padding-top: 10px;
+}
+.d4 .sec .label .n { display: block; color: #0a0a0a; margin-top: 4px; font-size: 1rem; font-family: "Inter", sans-serif; font-weight: 500; letter-spacing: -0.01em; }
+.d4 .tbl {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.84rem;
+}
+.d4 .tbl thead th {
+  text-align: left; padding: 8px 12px 8px 0;
+  font-family: ui-monospace, monospace;
+  font-size: 0.66rem; color: #a3a3a3;
+  font-weight: 400; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-top: 1px solid #0a0a0a;
+  border-bottom: 1px solid #e5e5e5;
+}
+.d4 .tbl tbody td {
+  padding: 14px 12px 14px 0;
+  border-bottom: 1px solid #e5e5e5;
+  vertical-align: top;
+}
+.d4 .tbl .yr {
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem; color: #717171;
+  white-space: nowrap;
+  font-feature-settings: "tnum";
+}
+.d4 .tbl .org {
+  font-weight: 500;
+  font-size: 0.92rem;
+  letter-spacing: -0.005em;
+}
+.d4 .tbl .org .role {
+  display: block; color: #717171;
+  font-weight: 400; font-size: 0.78rem;
+  margin-top: 2px;
+}
+.d4 .tbl .desc {
+  color: #404040; font-size: 0.84rem; line-height: 1.55;
+  max-width: 480px;
+}
+.d4 .tbl .stat {
+  text-align: right; white-space: nowrap;
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem; color: #717171;
+}
+.d4 .tbl .stat::before {
+  content: ""; display: inline-block;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #0a0a0a; margin-right: 8px;
+  vertical-align: 1px;
+}
+.d4 .tbl .stat.up::before { background: #ff3b30; }
+.d4 .tbl .stat.dim { color: #a3a3a3; }
+.d4 .tbl .stat.dim::before { background: #d4d4d4; }
+.d4 .pgrid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid #0a0a0a;
+}
+.d4 .pgrid .p {
+  padding: 18px 16px 18px 0;
+  border-right: 1px solid #e5e5e5;
+}
+.d4 .pgrid .p:last-child { border-right: 0; }
+.d4 .pgrid .pn {
+  font-family: ui-monospace, monospace;
+  font-size: 0.68rem; color: #a3a3a3;
+  letter-spacing: 0.04em; margin-bottom: 12px;
+}
+.d4 .pgrid .pt {
+  font-size: 0.94rem; font-weight: 500;
+  margin: 0 0 6px; line-height: 1.3;
+  letter-spacing: -0.005em;
+}
+.d4 .pgrid .pd {
+  font-size: 0.8rem; color: #717171; line-height: 1.55;
+  margin: 0 0 14px;
+}
+.d4 .pgrid .pf {
+  font-family: ui-monospace, monospace;
+  font-size: 0.66rem; color: #a3a3a3;
+  letter-spacing: 0.04em;
+  display: flex; gap: 14px;
+  border-top: 1px solid #e5e5e5; padding-top: 8px;
+}
+.d4 .pgrid .pf .red { color: #ff3b30; }
+
+</style>
+</head>
+<body>
+
+<div class="shell-head">
+  <div>
+    <h1>设计方案 <em>· redo</em></h1>
+    <p>四个方向，每套用真实简历内容排好版。挑一个，我把全站（index / experience / projects / contact）按它实现。</p>
+  </div>
+  <div class="meta">
+    edward zhang<br>
+    2026-05-04 · v2<br>
+    4 / 4 directions
+  </div>
+</div>
+
+<div class="shell-grid">
+
+  <!-- ============================================================
+       1 · EDITORIAL PRINT
+       ============================================================ -->
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-row">
+        <span class="opt-num">01 / 04</span>
+        <span class="opt-title">Editorial Print</span>
+        <span class="opt-tag">serif · paper · grid</span>
+      </div>
+      <p class="opt-desc">
+        暖白纸感 <b>#f6f1e7</b>，衬线大标题（Times / Tiempos 风），等宽 meta，<b>12 列网格隐约可见</b>，年份挂在左边距，章节编号 <b>§01 / §02</b>，hairline 分割线，drop cap 首字下沉。像一本小开本印刷物 —— 严肃但不呆板。
+      </p>
+    </div>
+    <div class="preview-frame">
+      <div class="preview-inner d1">
+        <header class="hdr">
+          <div class="brand">Edward Zhang <em>— Software Engineer</em></div>
+          <nav class="nav">
+            <a class="x" href="#">Index</a>
+            <a href="#">Experience</a>
+            <a href="#">Projects</a>
+            <a href="#">Contact</a>
+            <a href="#">Resume ↗</a>
+          </nav>
+        </header>
+        <main>
+          <div class="lead">
+            <div class="num">§00<span>masthead</span></div>
+            <div>
+              <h1>Edward<br>Zhang, <em>building</em><br>systems.</h1>
+            </div>
+            <div>
+              <p class="lede">Operating systems, distributed services, cloud-backed applications, ML serving experiments.</p>
+              <div class="meta">USC · Class of 2027 · Los Angeles</div>
+            </div>
+          </div>
+
+          <section class="sec">
+            <div class="sh">
+              <div class="num">§01</div>
+              <h2><em>Experience.</em> Where the work has happened.</h2>
+            </div>
+            <div class="row">
+              <div class="yr">May 2026 → Aug 2026</div>
+              <h3>Google <em>— SWE Intern</em></h3>
+              <p>Incoming software engineering intern, Sunnyvale. Team and scope to be assigned.<span class="small">Sunnyvale, CA · Incoming</span></p>
+            </div>
+            <div class="row">
+              <div class="yr">Aug 2024 → Dec 2024</div>
+              <h3>Lee's Lab <em>— USC Keck</em></h3>
+              <p>Built a web platform for HIV DNA sequence analysis. React frontend, AWS Lambda + SQS + SES + DynamoDB pipeline, scoped Google Drive OAuth.<span class="small">Research engineer</span></p>
+            </div>
+            <div class="row">
+              <div class="yr">May 2024 → Jul 2024</div>
+              <h3>CNeutral.io <em>— ESG Analytics</em></h3>
+              <p>ESG analytics APIs over PostgreSQL, Redis caching layer, React dashboards for public-company sustainability metrics.<span class="small">Full-stack</span></p>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sh">
+              <div class="num">§02</div>
+              <h2><em>Projects.</em> Selected, with citations.</h2>
+            </div>
+            <div class="pgrid">
+              <div class="num">§02.a–c</div>
+              <div class="pcard">
+                <div class="pn">A · OS</div>
+                <h4>Unix-like kernel from scratch</h4>
+                <p>Bootloader, paging, scheduler, ext2-ish FS, syscalls. Written in C / x86 assembly.</p>
+              </div>
+              <div class="pcard">
+                <div class="pn">B · Distributed</div>
+                <h4>Mining, Raft &amp; geo-replicated storage</h4>
+                <p>Three independent systems exploring consensus, replication, and consistency tradeoffs.</p>
+              </div>
+              <div class="pcard">
+                <div class="pn">C · ML Sys</div>
+                <h4>Cache-aware serving experiments</h4>
+                <p>Workload-driven evictions and request batching for inference latency.</p>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       2 · SYSTEMS TERMINAL
+       ============================================================ -->
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-row">
+        <span class="opt-num">02 / 04</span>
+        <span class="opt-title">Systems Terminal</span>
+        <span class="opt-tag">mono · amber · ANSI</span>
+      </div>
+      <p class="opt-desc">
+        不是 GitHub dark，而是真的看起来像运行中的工具：<b>JetBrains Mono</b>，琥珀单色 accent，prompt 风 header，状态栏，经历用 <b>ps -ef 表格</b>，项目用 <b>ls -la</b> 列表，闪烁光标。底色 <b>#0e0f10 暖黑</b>，参考 fly.io / Tailscale console。
+      </p>
+    </div>
+    <div class="preview-frame">
+      <div class="preview-inner d2">
+        <div class="topbar">
+          <span class="dot"></span>
+          <span>edward@portfolio</span>
+          <span class="sep">│</span>
+          <span>~/index</span>
+          <span class="sep">│</span>
+          <span>tmux 0:0*</span>
+          <span class="right">2026-05-04 · uptime 3y 2m · load 0.42 0.38 0.35</span>
+        </div>
+        <header class="hdr">
+          <div class="prompt">
+            <span class="u">edward</span><span class="p">@portfolio</span>:<span class="p">~</span>$ <span class="c">whoami --verbose</span>
+          </div>
+          <nav class="nav">
+            <a class="x" href="#">~/index</a>
+            <a href="#">~/experience</a>
+            <a href="#">~/projects</a>
+            <a href="#">~/contact</a>
+            <a href="#">resume.pdf</a>
+          </nav>
+        </header>
+        <main>
+          <p class="ey">role · software engineer · systems &amp; infra</p>
+          <h1>edward_zhang<span class="cursor"></span></h1>
+          <p class="lede">
+            building <span class="k">operating systems</span>, <span class="k">distributed services</span>,
+            <span class="s">cloud-backed apps</span>, and <span class="s">ml serving experiments</span>.
+            currently @ <span class="k">USC</span>, c/o 2027.
+          </p>
+          <div class="btns">
+            <span class="btn x">cat experience.md</span>
+            <span class="btn">ls projects/</span>
+            <span class="btn">curl /contact</span>
+          </div>
+
+          <section class="sec">
+            <div class="sh">
+              <span class="pf">$</span>
+              <h2>ps -ef --sort=start_time</h2>
+              <span class="meta">3 processes · 1 running · 2 exited 0</span>
+            </div>
+            <table class="ps">
+              <thead><tr>
+                <th style="width:60px">PID</th>
+                <th style="width:200px">PERIOD</th>
+                <th style="width:300px">CMD</th>
+                <th>DESCRIPTION</th>
+                <th style="width:90px;text-align:right">STATUS</th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td class="pid">3142</td>
+                  <td class="when">05/2026 → 08/2026</td>
+                  <td class="role">google <span class="at">// swe intern, sunnyvale</span></td>
+                  <td class="desc">incoming software engineering intern. team &amp; scope tba.</td>
+                  <td class="stat">● queued</td>
+                </tr>
+                <tr>
+                  <td class="pid">2881</td>
+                  <td class="when">08/2024 → 12/2024</td>
+                  <td class="role">lee_lab <span class="at">// research engineer</span></td>
+                  <td class="desc">react + aws lambda/sqs/ses/dynamodb + drive oauth · hiv dna analysis platform.</td>
+                  <td class="stat" style="color:#6c6f76">● done</td>
+                </tr>
+                <tr>
+                  <td class="pid">2614</td>
+                  <td class="when">05/2024 → 07/2024</td>
+                  <td class="role">cneutral.io <span class="at">// full-stack</span></td>
+                  <td class="desc">esg analytics apis · postgres + redis + react dashboards.</td>
+                  <td class="stat" style="color:#6c6f76">● done</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="sec">
+            <div class="sh">
+              <span class="pf">$</span>
+              <h2>ls -la ~/projects/</h2>
+              <span class="meta">total 3 · sorted by depth desc</span>
+            </div>
+            <div class="ls">
+              <div class="row h">
+                <span>perms</span><span>size</span><span>updated</span><span>name</span><span>tags</span>
+              </div>
+              <div class="row">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="sz">14k loc</span>
+                <span class="dt">2025-12</span>
+                <span class="nm">unix-kernel</span>
+                <span class="tag">[c, x86, paging, fs]</span>
+              </div>
+              <div class="row">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="sz">9.2k loc</span>
+                <span class="dt">2025-10</span>
+                <span class="nm">distributed/</span>
+                <span class="tag">[raft, replication, mining]</span>
+              </div>
+              <div class="row">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="sz">3.8k loc</span>
+                <span class="dt">2025-09</span>
+                <span class="nm">ml-cache-serve</span>
+                <span class="tag">[inference, batching]</span>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       3 · ARCHIVE QUIET
+       ============================================================ -->
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-row">
+        <span class="opt-num">03 / 04</span>
+        <span class="opt-title">Archive Quiet</span>
+        <span class="opt-tag">serif · reading · margins</span>
+      </div>
+      <p class="opt-desc">
+        没有 hero、没有 CTA，看上去不像简历站，像一篇<b>有人读的文章</b>。Source Serif 正文，<b>540px 阅读宽</b>，drop cap 首字下沉，左侧常驻 TOC，年份挂在左边距，<b>脚注</b>而非弹窗。极致克制，参考 Manuel Moreale / Robin Sloan 的个人站。
+      </p>
+    </div>
+    <div class="preview-frame">
+      <div class="preview-inner d3">
+        <header class="hdr">
+          <div class="brand">Edward Zhang <em>— an archive</em></div>
+          <nav class="nav">
+            <a class="x" href="#">Index</a>
+            <a href="#">Work</a>
+            <a href="#">Writing</a>
+            <a href="#">Projects</a>
+            <a href="#">Colophon</a>
+          </nav>
+        </header>
+        <main>
+          <aside class="toc">
+            <div class="label">Contents</div>
+            <ol>
+              <li class="x">Preface</li>
+              <li>Where I've worked</li>
+              <li>What I've built</li>
+              <li>How to reach me</li>
+              <li>Notes &amp; colophon</li>
+            </ol>
+          </aside>
+
+          <article class="col">
+            <p class="ey">Preface · 2026</p>
+            <h1>A short note on <em>working with systems.</em></h1>
+            <p class="lede">For when you'd like to know what I do, before deciding whether to read further.</p>
+            <p class="body">
+              I'm an undergraduate at USC, focused on the layer of software where machines stop being a single thing and start being many — operating systems, distributed services, cloud-backed applications, and recent experiments around how models are actually served<sup>1</sup>. This site is not a CV. The CV is <a style="color:inherit;text-decoration:underline;text-underline-offset:3px">elsewhere</a>. What follows is a slightly longer version, written for people who want to read, not skim.
+            </p>
+
+            <section class="sec">
+              <div class="sh">
+                <span class="num">§ 01</span>
+                <h2>Where I've worked, <em>chronologically.</em></h2>
+              </div>
+              <div class="entry">
+                <div class="yr">May 2026<span class="place">— Aug 2026</span></div>
+                <h3>Google, <em>SWE Intern</em></h3>
+                <p>Incoming for the summer in Sunnyvale. Specifics will be filled in once I'm there.</p>
+              </div>
+              <div class="entry">
+                <div class="yr">Aug 2024<span class="place">— Dec 2024</span></div>
+                <h3>Lee's Lab, <em>USC Keck School</em></h3>
+                <p>Built a web platform for HIV DNA sequence analysis: React on the front, AWS Lambda + SQS + SES + DynamoDB underneath, with scoped Drive OAuth for the labs that wanted to bring their own data.</p>
+              </div>
+              <div class="entry">
+                <div class="yr">May 2024<span class="place">— Jul 2024</span></div>
+                <h3>CNeutral.io, <em>full-stack</em></h3>
+                <p>ESG analytics APIs over Postgres, with Redis in front, and React dashboards for sustainability metrics on public companies.</p>
+              </div>
+
+              <p class="footnote">
+                <sup>1</sup> The serving experiments live in the <em>projects</em> page. They are still rough.
+              </p>
+            </section>
+          </article>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       4 · DENSE MINIMAL
+       ============================================================ -->
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-row">
+        <span class="opt-num">04 / 04</span>
+        <span class="opt-title">Dense Minimal</span>
+        <span class="opt-tag">hairline · mono · signal red</span>
+      </div>
+      <p class="opt-desc">
+        90% 灰阶 + 单一信号红，全 <b>1px hairline 表格</b>，状态点 indicator，technical-drawing 风格的 <b>EZ 单线 logo</b>。无装饰、无圆角、无阴影 —— 靠 information density 说话。参考 Linear / Vercel 内部页、Read.cv。
+      </p>
+    </div>
+    <div class="preview-frame">
+      <div class="preview-inner d4">
+        <header class="hdr">
+          <div class="brand-mark">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#0a0a0a" stroke-width="1.4">
+              <path d="M1 1 H 14 M1 1 V 11 M1 11 H 12 M1 11 V 21 M1 21 H 14"/>
+              <path d="M16 1 L 21 21 M21 1 L 16 21"/>
+            </svg>
+            <span>Edward Zhang</span>
+            <span class="stat">available · sep 2026</span>
+          </div>
+          <nav class="nav">
+            <a class="x" href="#">/</a>
+            <a href="#">/work</a>
+            <a href="#">/projects</a>
+            <a href="#">/contact</a>
+          </nav>
+          <div class="right">
+            v2.4.0 · build c8a91f<br>
+            losangeles · 17:42 PT
+          </div>
+        </header>
+        <main>
+          <div class="lead">
+            <div class="idx">[ 00 ]<br>masthead</div>
+            <div>
+              <h1>Edward Zhang.<br><span class="light">Systems engineer.</span></h1>
+              <p class="lede">Operating systems, distributed services, cloud-backed applications, ML serving experiments. USC, class of 2027.</p>
+            </div>
+            <div class="meta">
+              <div class="kv"><span class="k">role</span><span class="v">software engineer</span></div>
+              <div class="kv"><span class="k">focus</span><span class="v">systems · infra · ml-sys</span></div>
+              <div class="kv"><span class="k">based</span><span class="v">los angeles, ca</span></div>
+              <div class="kv"><span class="k">status</span><span class="v"><span class="red">● </span>open to fall '26 fulltime</span></div>
+              <div class="kv"><span class="k">next</span><span class="v">google · swe intern · sunnyvale</span></div>
+              <div class="kv"><span class="k">contact</span><span class="v">edwardzh@usc.edu</span></div>
+            </div>
+          </div>
+
+          <section class="sec">
+            <div class="label">[ 01 ]<span class="n">Work</span></div>
+            <table class="tbl">
+              <thead><tr>
+                <th style="width:140px">Period</th>
+                <th style="width:280px">Organization</th>
+                <th>Focus</th>
+                <th style="width:120px;text-align:right">Status</th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td class="yr">2026.05–08</td>
+                  <td class="org">Google<span class="role">Software Engineer Intern · Sunnyvale</span></td>
+                  <td class="desc">Incoming. Team and scope tba.</td>
+                  <td class="stat up">incoming</td>
+                </tr>
+                <tr>
+                  <td class="yr">2024.08–12</td>
+                  <td class="org">Lee's Lab, USC Keck<span class="role">Research Engineer</span></td>
+                  <td class="desc">HIV DNA sequence analysis platform · React + AWS Lambda/SQS/SES/DynamoDB · scoped Drive OAuth.</td>
+                  <td class="stat dim">shipped</td>
+                </tr>
+                <tr>
+                  <td class="yr">2024.05–07</td>
+                  <td class="org">CNeutral.io<span class="role">Full-stack Engineer</span></td>
+                  <td class="desc">ESG analytics APIs · Postgres + Redis · React dashboards for public-company sustainability data.</td>
+                  <td class="stat dim">shipped</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="sec">
+            <div class="label">[ 02 ]<span class="n">Projects</span></div>
+            <div class="pgrid">
+              <div class="p">
+                <div class="pn">02.a · operating systems</div>
+                <h4 class="pt">Unix-like kernel, from scratch.</h4>
+                <p class="pd">Bootloader, paging, preemptive scheduler, ext2-ish FS, syscalls. C / x86 asm.</p>
+                <div class="pf"><span>14.2k loc</span><span>c, asm</span><span class="red">● active</span></div>
+              </div>
+              <div class="p">
+                <div class="pn">02.b · distributed</div>
+                <h4 class="pt">Mining, Raft, geo-replicated storage.</h4>
+                <p class="pd">Three systems exploring consensus, replication, and consistency tradeoffs.</p>
+                <div class="pf"><span>9.2k loc</span><span>go</span><span>● shipped</span></div>
+              </div>
+              <div class="p">
+                <div class="pn">02.c · ml-sys</div>
+                <h4 class="pt">Cache-aware serving experiments.</h4>
+                <p class="pd">Workload-driven evictions and request batching for inference latency.</p>
+                <div class="pf"><span>3.8k loc</span><span>python</span><span>● wip</span></div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
